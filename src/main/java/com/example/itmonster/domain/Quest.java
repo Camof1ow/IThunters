@@ -38,6 +38,7 @@ public class Quest extends Timestamped {
 
     //진행 유무만 확인
     private Boolean status; // 모집중 / 모집완료
+    private Boolean isComplete; // 퀘스트 진행중 / 완료
 
     @OneToMany(mappedBy = "quest")
     private List<Comment> comments;
@@ -78,5 +79,9 @@ public class Quest extends Timestamped {
 
     public void updateStatus(Quest quest) {
         this.status = quest.frontend + quest.backend + quest.fullstack + quest.designer == 0;
+    }
+
+    public void completeQuest(){
+        this.isComplete = true;
     }
 }
