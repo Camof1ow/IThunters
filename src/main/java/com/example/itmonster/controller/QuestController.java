@@ -73,6 +73,12 @@ public class QuestController {
         return ResponseEntity.ok(questService.bookmarkQuest(questId, userDetails));
     }
 
+    @PutMapping("/{questId}/complete")
+    public ResponseEntity<Boolean> completeQuest(@PathVariable Long questId,
+        @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return ResponseEntity.ok(questService.completeQuest(questId, userDetails));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<QuestResponseDto>> searchQuests( @RequestParam MultiValueMap<String, String> allParameters ){
 

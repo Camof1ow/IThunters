@@ -38,6 +38,7 @@ public class Quest extends Timestamped {
 
     //진행 유무만 확인
     private Boolean status; // 모집중 / 모집완료
+    private Boolean isComplete; // 퀘스트 진행중 / 완료
 
     @OneToMany(mappedBy = "quest")
     private List<Comment> comments;
@@ -49,7 +50,7 @@ public class Quest extends Timestamped {
     private List<StackOfQuest> stacks = new ArrayList<>();
 
     public void updateQuest(String title, String content, Long frontend,
-                            Long backend, Long fullstack, Long designer, Long duration){
+        Long backend, Long fullstack, Long designer, Long duration) {
         this.title = title;
         this.content = content;
         this.frontend = frontend;
@@ -57,13 +58,30 @@ public class Quest extends Timestamped {
         this.fullstack = fullstack;
         this.designer = designer;
         this.duration = duration;
+        this.status = frontend + backend + fullstack + designer == 0;
     }
 
-    public void updateBackendCount( Long count ){ this.backend = count; }
-    public void updateFrontendCount( Long count ){ this.frontend = count; }
-    public void updateFullstackCount( Long count ){ this.fullstack = count; }
-    public void updateDesignerCount( Long count ){ this.designer = count; }
+    public void updateBackendCount(Long count) {
+        this.backend = count;
+    }
 
+    public void updateFrontendCount(Long count) {
+        this.frontend = count;
+    }
 
+    public void updateFullstackCount(Long count) {
+        this.fullstack = count;
+    }
 
+    public void updateDesignerCount(Long count) {
+        this.designer = count;
+    }
+
+    public void updateStatus(Quest quest) {
+        this.status = quest.frontend + quest.backend + quest.fullstack + quest.designer == 0;
+    }
+
+    public void completeQuest(){
+        this.isComplete = true;
+    }
 }

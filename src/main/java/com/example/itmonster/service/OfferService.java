@@ -5,10 +5,12 @@ import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.Offer;
 import com.example.itmonster.domain.Offer.ClassType;
 import com.example.itmonster.domain.Quest;
+import com.example.itmonster.domain.Squad;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.OfferRepository;
 import com.example.itmonster.repository.QuestRepository;
+import com.example.itmonster.repository.SquadRepository;
 import com.example.itmonster.security.UserDetailsImpl;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ public class OfferService {
 
     private final OfferRepository offerRepository;
     private final QuestRepository questRepository;
+    private final SquadRepository squadRepository;
 
     // 합류 요청 생성
     @Transactional
@@ -43,6 +46,11 @@ public class OfferService {
         Optional<Offer> offer = offerRepository.findByOfferedMemberAndQuest( offeredMember , quest );
 
         if( offer.isPresent() ) throw new CustomException( ErrorCode.OFFER_CONFLICT );  // 에러 : 오더가 이미 존재할 경우
+
+        Squad squad = squadRepository.findAllByMemberAndQuest(offeredMember, quest).orElse(null);
+        if (squad != null) {
+            throw new CustomException(ErrorCode.SQUAD_CONFLICT);
+        }
 
         chkClassRecruitment( classType , quest );
 

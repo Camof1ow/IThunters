@@ -23,26 +23,30 @@ public class SquadController {
 
     // 스쿼드에 멤버 추가
     @PostMapping("/squads/{offerId}")
-    public ResponseEntity<Boolean> addSquadMember( @PathVariable Long offerId , @AuthenticationPrincipal UserDetailsImpl userDetails ){
-        return ResponseEntity.ok( squadService.addSquadMember( offerId , userDetails.getMember() ) );
+    public ResponseEntity<Boolean> addSquadMember(@PathVariable Long offerId,
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(squadService.addSquadMember(offerId, userDetails.getMember()));
     }
 
     // 퀘스트에 합류된 스쿼드 멤버들 리스트 불러오기
     @GetMapping("/squads/{questId}")
-    public ResponseEntity<List<SquadResponseDto>> getSquadMembersByQuest( @PathVariable Long questId ){
-        return ResponseEntity.ok( squadService.getSquadMembersByQuest( questId ) );
+    public ResponseEntity<List<SquadResponseDto>> getSquadMembersByQuest(
+        @PathVariable Long questId) {
+        return ResponseEntity.ok(squadService.getSquadMembersByQuest(questId));
     }
 
     // 내가 소속한 스쿼드 불러오기
     @GetMapping("/squads")
-    public ResponseEntity<List<SquadResponseDto>> getMySquads( @AuthenticationPrincipal UserDetailsImpl userDetails ){
-        return ResponseEntity.ok( squadService.getMySquads( userDetails.getMember() ) );
+    public ResponseEntity<List<SquadResponseDto>> getMySquads(
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(squadService.getMySquads(userDetails.getMember()));
     }
 
     // 스쿼드에 멤버 삭제
     @DeleteMapping("/squads/{squadId}")
-    public ResponseEntity<Boolean> deleteSquadMember( @PathVariable Long squadId ){
-        return ResponseEntity.ok( squadService.deleteSquadMember( squadId ) );
+    public ResponseEntity<Boolean> deleteSquadMember(@PathVariable Long squadId,
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(squadService.deleteSquadMember(squadId, userDetails.getMember()));
     }
 
 }

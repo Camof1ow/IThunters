@@ -13,6 +13,7 @@ import com.example.itmonster.repository.*;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.utils.SearchPredicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,6 @@ import java.util.List;
 public class QuestService {
 
     private final QuestRepository questRepository;
-    private final FolioRepository folioRepository;
     private final SquadRepository squadRepository;
     private final BookmarkRepository bookmarkRepository;
     private final CommentRepository commentRepository;
@@ -56,7 +56,9 @@ public class QuestService {
             .backend(questRequestDto.getBackend())
             .fullstack(questRequestDto.getFullstack())
             .designer(questRequestDto.getDesigner())
-            .status(false)
+            .status(questRequestDto.getBackend() + questRequestDto.getFrontend()
+                + questRequestDto.getDesigner() + questRequestDto.getFullstack() == 0)
+            .isComplete(false)
             .duration(questRequestDto.getDuration())
             .build();
         questRepository.save(quest);
@@ -92,7 +94,7 @@ public class QuestService {
     @Cacheable(value = "favoriteQuestCaching")
     @Transactional(readOnly = true) // 메인페이지용 북마크 높은 3개 조회 // 기술스택 추가해야됨 !!
     public List<MainQuestResponseDto> readFavorite3Quest() {
-        List<Quest> quests = questRepository.findTop3ByOrderByBookmarkCntDesc();
+        List<Quest> quests = questRepository.findTop3ByIsCompleteFalseOrderByBookmarkCntDesc();
         List<MainQuestResponseDto> result = new ArrayList<>();
         for (Quest quest : quests) {
             result.add(toMainQuestResponseDto(quest));
@@ -102,7 +104,7 @@ public class QuestService {
 
     @Transactional(readOnly = true) // 메인페이지용 게시글 최신순 3개 조회 // 기술스택 추가해야됨 !!
     public List<RecentQuestResponseDto> readRecent3Quest() {
-        List<Quest> quests = questRepository.findTop3ByOrderByModifiedAtDesc();
+        List<Quest> quests = questRepository.findTop3ByIsCompleteFalseOrderByModifiedAtDesc();
         List<RecentQuestResponseDto> result = new ArrayList<>();
         for (Quest quest : quests) {
             result.add(toRecentQuestResponseDto(quest));
@@ -140,6 +142,17 @@ public class QuestService {
         if (validateAuthor(member, quest)) {
             questRepository.deleteById(questId);
         }
+        return true;
+    }
+
+    @Transactional
+    public boolean completeQuest(Long questId, UserDetailsImpl userDetails) {
+        Member member = userDetails.getMember();
+        Quest quest = validateQuest(questId);
+        if(!Objects.equals(quest.getMember().getId(), member.getId())) {
+            throw new CustomException(ErrorCode.INVALID_AUTHORITY);
+        }  // 퀘스트 작성자만 완료할 수 있음
+        quest.completeQuest();
         return true;
     }
 
@@ -187,7 +200,7 @@ public class QuestService {
         return true;
     }
 
-    private QuestResponseDto toQuestResponseDto(Quest quest){
+    private QuestResponseDto toQuestResponseDto(Quest quest) {
         List<StackDto> stackDtos = quest.getStacks().stream().map(StackDto::new)
             .collect(Collectors.toList());
         List<String> temp = new ArrayList<>();
@@ -201,7 +214,8 @@ public class QuestService {
             .content(quest.getContent())
             .duration(quest.getDuration())
             .status(quest.getStatus())
-            .profileImg( quest.getMember().getProfileImg() )
+            .isComplete(quest.getIsComplete())
+            .profileImg(quest.getMember().getProfileImg())
             .classes(new ClassDto(quest))
             .bookmarkCnt(bookmarkRepository.countAllByQuest(quest))
             .commentCnt(commentRepository.countAllByQuest(quest))
@@ -210,8 +224,9 @@ public class QuestService {
             .stacks(temp)
             .build();
     }
+
     // 0915 수정추가분
-    private MainQuestResponseDto toMainQuestResponseDto(Quest quest){
+    private MainQuestResponseDto toMainQuestResponseDto(Quest quest) {
         List<StackDto> stackDtos = quest.getStacks().stream().map(StackDto::new)
             .collect(Collectors.toList());
         List<String> temp = new ArrayList<>();
@@ -226,6 +241,7 @@ public class QuestService {
             .content(quest.getContent())
             .duration(quest.getDuration())
             .status(quest.getStatus())
+            .isComplete(quest.getIsComplete())
             .classes(new ClassDto(quest))
             .bookmarkCnt(bookmarkRepository.countAllByQuest(quest))
             .commentCnt(commentRepository.countAllByQuest(quest))
@@ -233,7 +249,7 @@ public class QuestService {
             .build();
     }
 
-    private RecentQuestResponseDto toRecentQuestResponseDto(Quest quest){
+    private RecentQuestResponseDto toRecentQuestResponseDto(Quest quest) {
         List<StackDto> stackDtos = quest.getStacks().stream().map(StackDto::new)
             .collect(Collectors.toList());
         List<String> temp = new ArrayList<>();
@@ -248,6 +264,7 @@ public class QuestService {
             .content(quest.getContent())
             .duration(quest.getDuration())
             .status(quest.getStatus())
+            .isComplete(quest.getIsComplete())
             .classes(new ClassDto(quest))
             .bookmarkCnt(bookmarkRepository.countAllByQuest(quest))
             .commentCnt(commentRepository.countAllByQuest(quest))
@@ -257,7 +274,7 @@ public class QuestService {
             .build();
     }
 
-    private void saveStack(Quest quest, QuestRequestDto questRequestDto){
+    private void saveStack(Quest quest, QuestRequestDto questRequestDto) {
         List<String> stacks = questRequestDto.getStacks();
         for (String stack : stacks) {
             stackOfQuestRepository.save(
@@ -270,6 +287,6 @@ public class QuestService {
 
     @CacheEvict(value = "favoriteQuestCaching", allEntries = true)
     @Scheduled(cron = "0 0 0 * * *")
-    public void deleteCache(){
+    public void deleteCache() {
     }
 }
