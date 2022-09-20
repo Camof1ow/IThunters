@@ -66,24 +66,12 @@ public class SquadService {
 
         if (classType == ClassType.BACKEND) {
             quest.updateBackendCount(quest.getBackend() - 1);
-            if( quest.getBackend() == 0 ){
-                offerRepository.deleteAllByClassTypeAndQuest( ClassType.BACKEND , quest );
-            }
         } else if (classType == ClassType.FRONTEND) {
             quest.updateFrontendCount(quest.getFrontend() - 1);
-            if( quest.getFrontend() == 0 ){
-                offerRepository.deleteAllByClassTypeAndQuest( ClassType.FRONTEND , quest );
-            }
         } else if (classType == ClassType.FULLSTACK) {
             quest.updateFullstackCount(quest.getFullstack() - 1);
-            if( quest.getFullstack() == 0 ){
-                offerRepository.deleteAllByClassTypeAndQuest( ClassType.FULLSTACK , quest );
-            }
         } else {
             quest.updateDesignerCount(quest.getDesigner() - 1);
-            if( quest.getDesigner() == 0 ){
-                offerRepository.deleteAllByClassTypeAndQuest( ClassType.DESIGNER , quest );
-            }
         }
 
         questRepository.save(quest);
