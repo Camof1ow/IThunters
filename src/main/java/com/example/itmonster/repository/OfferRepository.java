@@ -2,6 +2,7 @@ package com.example.itmonster.repository;
 
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.Offer;
+import com.example.itmonster.domain.Offer.ClassType;
 import com.example.itmonster.domain.Quest;
 import java.util.List;
 import java.util.Optional;
@@ -13,4 +14,6 @@ public interface OfferRepository extends JpaRepository<Offer, Long> {
     Optional<Offer> findByOfferedMemberAndQuest(Member offeredMember, Quest quest);
 
     List<Offer> findAllByQuestIn(List<Quest> quests);
+
+    void deleteAllByClassTypeAndQuest(ClassType classType, Quest quest);
 }
