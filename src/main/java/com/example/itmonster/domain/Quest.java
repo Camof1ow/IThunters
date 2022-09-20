@@ -28,6 +28,7 @@ public class Quest extends Timestamped {
 
     private String title;
 
+    @Column(length = 1000)
     private String content;
 
     private Long frontend;
