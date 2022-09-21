@@ -2,9 +2,16 @@ package com.example.itmonster.controller;
 
 import com.example.itmonster.controller.request.MemberStacksDto;
 import com.example.itmonster.controller.request.SignupRequestDto;
+import com.example.itmonster.controller.request.SmsRequestDto;
+import com.example.itmonster.controller.response.MemberResponseDto;
+import com.example.itmonster.controller.response.ResponseDto;
+import com.example.itmonster.controller.response.SocialLoginResponseDto;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.service.MemberService;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,9 +30,9 @@ public class MemberController {
 
 	//회원가입
 	@PostMapping("api/members/signup")
-	public ResponseEntity<String> signupUser(@RequestBody SignupRequestDto requestDto)
+	public ResponseDto<String> signupUser(@RequestBody SignupRequestDto requestDto)
 		throws IOException {
-		return memberService.signupUser(requestDto);
+		return ResponseDto.success(memberService.signupUser(requestDto));
 	}
 
 	//username 중복체크
@@ -56,14 +63,26 @@ public class MemberController {
 
 	//이달의 회원 팔로우기준 top3
 	@GetMapping("/api/monster/month")
-	public ResponseEntity showTop3Following() {
+	public ResponseEntity<List> showTop3Following() {
 		return ResponseEntity.ok(memberService.showTop3Following());
 	}
 
-	// 현재 로그인된 유저 정보 확인
+	// 현재 로그인된 유저 정보 확인(임시)
 	@GetMapping("/api/members/status")
-	public ResponseEntity memberInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+	public ResponseEntity<MemberResponseDto> memberInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 		return ResponseEntity.ok(memberService.memberInfo(userDetails.getMember()));
+	}
+
+	@PostMapping("/api/members/sendSmsForSignup")
+	public ResponseDto<String> sendSmsForSignup(@RequestBody SmsRequestDto requestDto)
+		throws NoSuchAlgorithmException, InvalidKeyException {
+		String response = memberService.sendSmsForSignup(requestDto);
+		return ResponseDto.success(response);
+	}
+
+	@PostMapping("/api/members/confirmPhoneNumber")
+	public ResponseDto<Boolean> confirmPhoneNumber(@RequestBody SmsRequestDto requestDto){
+		return ResponseDto.success(memberService.confirmPhoneNumber(requestDto));
 	}
 
 	//로그인 후 관리자 권한 얻을 수 있는 API
@@ -75,7 +94,7 @@ public class MemberController {
 
 	//소셜로그인 사용자 정보 조회
 	@GetMapping("/social/member/islogin")
-	public ResponseEntity socialUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+	public ResponseDto<SocialLoginResponseDto> socialUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 		return memberService.socialUserInfo(userDetails);
 	}
 

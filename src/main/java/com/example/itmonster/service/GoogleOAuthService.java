@@ -44,12 +44,16 @@ public class GoogleOAuthService {
                     nickname.append(rdNick);
                 }
             }
+            //임시 전화번호 추가
+            String dummyNumber = "";
+            long random = (long)(Math.random() * (99999999999L - 10000000000L + 1)) + 10000000000L;
+
             Member member = Member.builder()
                 .email( email )
                 .nickname( nickname.toString() )
                 .password( password )
                 .role( RoleEnum.USER )
-                .followCounter(0L)
+                .phoneNumber(dummyNumber+random)
                 .profileImg( imgUrl )
                 .build();
             memberRepository.save(member);

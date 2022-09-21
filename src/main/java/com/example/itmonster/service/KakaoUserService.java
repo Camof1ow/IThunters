@@ -156,6 +156,7 @@ public class KakaoUserService {
 			if (memberRepository.existsByEmail(email)) {
 				throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
 			}
+
 			String nickname = kakaoUserInfo.getNickname();
 			if (memberRepository.existsByNickname(nickname)) {
 				Random rnd = new Random();
@@ -170,6 +171,8 @@ public class KakaoUserService {
 			String encodedPassword = passwordEncoder.encode(password); // 비밀번호 암호화
 			String profileImage = kakaoUserInfo.getProfileImage();
 			RoleEnum role = RoleEnum.USER; // 가입할 때 일반사용자로 로그인
+			String dummyNumber = "";
+			long random = (long)(Math.random() * (99999999999L - 10000000000L + 1)) + 10000000000L;
 
 			kakaoUser = Member.builder().
 				email(email)
@@ -177,8 +180,7 @@ public class KakaoUserService {
 				.password(encodedPassword)
 				.profileImg(profileImage)
 				.role(role)
-				.phoneNum(null)
-				.followCounter(0L)
+				.phoneNumber(dummyNumber+random)
 				.socialId(socialId).build();
 
 			memberRepository.save(kakaoUser);

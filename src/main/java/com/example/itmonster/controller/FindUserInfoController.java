@@ -2,6 +2,7 @@ package com.example.itmonster.controller;
 
 
 import com.example.itmonster.controller.request.SmsRequestDto;
+import com.example.itmonster.controller.response.ResponseDto;
 import com.example.itmonster.service.FindUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +21,8 @@ public class FindUserInfoController {
 
 
     @PostMapping("/api/members/sendAuth")
-    public ResponseEntity<String> sendAuth(@RequestBody SmsRequestDto smsRequestDto) throws NoSuchAlgorithmException, InvalidKeyException {
-        return findUserService.sendAuth(smsRequestDto);
+    public ResponseDto<Boolean> sendAuth(@RequestBody SmsRequestDto smsRequestDto) throws NoSuchAlgorithmException, InvalidKeyException {
+        return ResponseDto.success(findUserService.sendSmsForFindUsername(smsRequestDto));
     }
 
     @PostMapping("/api/members/findUsername")
