@@ -73,7 +73,6 @@ public class MemberService {
                 .profileImg(profileUrl)
                 .phoneNum(requestDto.getPhoneNum())
                 .role(RoleEnum.USER)
-                //.followCounter(0L)
                 .build();
         memberRepository.save(member);
 

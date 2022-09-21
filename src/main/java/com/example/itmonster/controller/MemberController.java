@@ -29,7 +29,7 @@ public class MemberController {
 	}
 
 	//username 중복체크
-	@PostMapping("/api/members/checkID")
+	@PostMapping("/api/members/checkId")
 	public ResponseEntity checkUsername(@RequestBody SignupRequestDto requestDto) {
 		return memberService.checkUsername(requestDto);
 	}
