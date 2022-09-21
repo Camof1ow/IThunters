@@ -19,6 +19,8 @@ public class SignupRequestDto {
 
     private String profileImage;
 
+    private String phoneNum;
+
 
 
 }

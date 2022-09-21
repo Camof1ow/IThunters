@@ -71,9 +71,9 @@ public class MemberService {
                 .nickname(requestDto.getNickname())
                 .password(password)
                 .profileImg(profileUrl)
-                .phoneNum(null)
+                .phoneNum(requestDto.getPhoneNum())
                 .role(RoleEnum.USER)
-                .followCounter(0L)
+                //.followCounter(0L)
                 .build();
         memberRepository.save(member);
 
