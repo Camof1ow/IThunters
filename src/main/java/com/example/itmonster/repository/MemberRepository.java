@@ -18,6 +18,8 @@ public interface MemberRepository extends JpaRepository<Member, Long>, QuerydslP
 
     Optional<Member> findBySocialId(String socialId);
 
+    Optional<Member> findByPhoneNum(String phoneNum);
+
     List<Member> findAllByNicknameContaining(String nickname);
 
     List<Member> findTop3ByOrderByFollowCounter();
