@@ -5,16 +5,14 @@ import com.example.itmonster.domain.Member;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.MemberRepository;
-import com.example.itmonster.service.SmsService;
 import com.example.itmonster.utils.RedisUtil;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -27,25 +25,26 @@ public class FindUserService {
     private final RedisUtil redisUtil;
 
     // 인증번호 발송
-    public ResponseEntity<String> sendAuth(SmsRequestDto smsRequestDto) throws NoSuchAlgorithmException, InvalidKeyException {
-        Member member = memberRepository.findByPhoneNum(smsRequestDto.getPhoneNo())
-                .orElseThrow(() -> new CustomException(ErrorCode.EMPTY_MEMBER));
-        String phoneNum = smsRequestDto.getPhoneNo();
-        smsService.sendSms(phoneNum, member.getId());
+    public Boolean sendSmsForFindUsername(SmsRequestDto smsRequestDto) throws NoSuchAlgorithmException, InvalidKeyException {
+        if(memberRepository.findByPhoneNumber(smsRequestDto.getPhoneNumber()).isEmpty()){
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
 
-        return new ResponseEntity<String>("인증번호가 발송되었습니다.", HttpStatus.OK);
+        String phoneNum = smsRequestDto.getPhoneNumber();
+        smsService.sendSms(phoneNum);
+        return true;
     }
 
     public ResponseEntity<String> findUsername(SmsRequestDto smsRequestDto) {
-        Member member = memberRepository.findByPhoneNum(smsRequestDto.getPhoneNo())
+        Member member = memberRepository.findByPhoneNumber(smsRequestDto.getPhoneNumber())
                 .orElseThrow(() -> new CustomException(ErrorCode.EMPTY_MEMBER));
         //String authNum = smsRequestDto.getAuthNo();
-        String authNum = redisUtil.getData(member.getId().toString());
+        String authNum = redisUtil.getData(smsRequestDto.getPhoneNumber());
 
-        if (!Objects.equals(authNum, smsRequestDto.getAuthNo())) {
-            return new ResponseEntity<String>("인증번호가 일치하지 않습니다.", HttpStatus.OK);
+        if (!Objects.equals(authNum, smsRequestDto.getPhoneNumber())) {
+            return new ResponseEntity<>("인증번호가 일치하지 않습니다.", HttpStatus.OK);
         }
-        return new ResponseEntity<String>(member.getEmail(), HttpStatus.OK);
+        return new ResponseEntity<>(member.getEmail(), HttpStatus.OK);
     }
 
 

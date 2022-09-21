@@ -1,6 +1,8 @@
 package com.example.itmonster.service;
 
 import com.example.itmonster.domain.Member;
+import com.example.itmonster.exceptionHandler.CustomException;
+import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.MemberRepository;
 import com.example.itmonster.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
@@ -44,20 +46,19 @@ public class SmsService {
     String serviceId;        									// 프로젝트에 할당된 SMS 서비스 ID
     String method = "POST";											// 요청 method
     String timestamp = Long.toString(System.currentTimeMillis()); 	// current timestamp (epoch)
-    String apiUrl = hostNameUrl + requestUrl;
 
 
     @Transactional
-    public ResponseEntity sendSms(String to,Long memberId) throws NoSuchAlgorithmException, InvalidKeyException {
-        if(redisUtil.getData(memberId.toString()) != null) return ResponseEntity.ok("60초 후 재시도하여 주십시오");
+    public String sendSms(String to) throws NoSuchAlgorithmException, InvalidKeyException {
+        if(redisUtil.getData(to) != null) return "60초 후 재시도하여 주십시오";
 
+        if(to.length() != 11) throw new CustomException(ErrorCode.PHONENUMBER_LENGTH);
 
         //난수생성
         int authNo = (int)(Math.random() * (9999 - 1000 + 1)) + 1000;
-        redisUtil.setDataExpire(memberId.toString(),String.valueOf(authNo),60L);
+        redisUtil.setDataExpire(to,String.valueOf(authNo),60L);
 
         // HTTP Header 생성
-
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/json;charset=utf-8");
         headers.add("x-ncp-apigw-timestamp",timestamp);
@@ -89,22 +90,15 @@ public class SmsService {
 
         String responseBody = response.getBody();
         //발송 실패시 로직 구현필요
-        return ResponseEntity.ok(responseBody);
+        System.out.println(responseBody);
 
-    }
-
-    @Transactional
-    public ResponseEntity updatePhoneNo(String phoneNo, String authNo, Member member){
-        if(Objects.equals(redisUtil.getData(member.getId().toString()),authNo)){
-            member.updatePhoneNumber(phoneNo);
-            memberRepository.save(member);
-            redisUtil.deleteData(member.getId().toString());
-            return ResponseEntity.ok("휴대폰 번호 등록이 완료되었습니다");
+        if(responseBody.contains("errors")){
+            throw new CustomException(ErrorCode.FAILED_MESSAGE);
         }
 
-        return ResponseEntity.ok("인증번호가 일치하지 않습니다.");
-    }
+        return responseBody;
 
+    }
 
 
 

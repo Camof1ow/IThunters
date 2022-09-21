@@ -35,8 +35,8 @@ public class SocialLoginController {
     private final NaverUserService naverUserService;
 
     //카카오 로그인
-    @GetMapping("/oauth/kakao/callback/{code}")
-    public ResponseEntity<String> kakaoLogin(@PathVariable("code") String code, HttpServletResponse response) {
+    @GetMapping("/oauth/kakao/callback")
+    public ResponseEntity<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
 
         try { // 회원가입 진행 성공시
             return ResponseEntity.ok("카카오 로그인 성공\n"+kakaoUserService.kakaoLogin(code, response));

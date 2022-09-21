@@ -181,6 +181,9 @@ public class NaverUserService {
                     nickname.append(rdNick);
                 }
             }
+            String dummyNumber = "";
+            long random = (long)(Math.random() * (99999999999L - 10000000000L + 1)) + 10000000000L;
+
             String password = UUID.randomUUID().toString(); // password: random UUID
             String encodedPassword = passwordEncoder.encode(password); // 비밀번호 암호화
             String profileImage = naverUserInfo.getProfileImage();
@@ -191,8 +194,7 @@ public class NaverUserService {
                 .password(encodedPassword)
                 .profileImg(profileImage)
                 .role(RoleEnum.USER)
-                .phoneNum(null)
-                .followCounter(0L)
+                .phoneNumber(dummyNumber+random)
                 .socialId(socialId).build();
             memberRepository.save(naverUser);
         }

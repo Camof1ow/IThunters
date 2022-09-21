@@ -19,7 +19,7 @@ public class SignupRequestDto {
 
     private String profileImage;
 
-    private String phoneNum;
+    private String phoneNumber;
 
 
 
