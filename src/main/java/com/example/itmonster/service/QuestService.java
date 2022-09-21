@@ -91,7 +91,7 @@ public class QuestService {
         return result;
     }
 
-    @Cacheable(value = "favoriteQuestCaching")
+//    @Cacheable(value = "favoriteQuestCaching")
     @Transactional(readOnly = true) // 메인페이지용 북마크 높은 3개 조회 // 기술스택 추가해야됨 !!
     public List<MainQuestResponseDto> readFavorite3Quest() {
         List<Quest> quests = questRepository.findTop3ByIsCompleteFalseOrderByBookmarkCntDesc();
