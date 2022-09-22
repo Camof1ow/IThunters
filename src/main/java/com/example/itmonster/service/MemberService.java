@@ -289,9 +289,14 @@ public class MemberService {
 
     public Boolean confirmPhoneNumber(SmsRequestDto requestDto){
         String phoneNumber = requestDto.getPhoneNumber();
+
         if(!Objects.equals(redisUtil.getData(phoneNumber), requestDto.getAuthNumber())){
             throw new CustomException(ErrorCode.FAILED_VERIFYING_AUTH);
-        }
+        }// 인증번호가 일치하지 않은경우
+        if (Objects.equals(redisUtil.getData(requestDto.getPhoneNumber()), "true")){
+            return Boolean.TRUE;
+        }// 이미 인증번호 인증을 마친 경우
+
         redisUtil.deleteData(requestDto.getPhoneNumber());
         redisUtil.setDataExpire(phoneNumber,"true",300);
         return Boolean.TRUE;
