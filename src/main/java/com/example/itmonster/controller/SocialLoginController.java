@@ -1,16 +1,13 @@
 package com.example.itmonster.controller;
 
-import com.amazonaws.services.xray.model.Http;
 import com.example.itmonster.controller.response.ResponseDto;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.service.GoogleOAuthService;
 import com.example.itmonster.service.KakaoUserService;
 import com.example.itmonster.service.NaverUserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import java.math.BigInteger;
 import java.net.URI;
-import java.security.SecureRandom;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -19,12 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletResponse;
 
 
 @RestController

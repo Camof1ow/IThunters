@@ -95,7 +95,7 @@ public class SmsService {
         if(responseBody.contains("errors")){
             throw new CustomException(ErrorCode.FAILED_MESSAGE);
         }
-
+        System.out.println(to + "메시지 발송 완료");
         return responseBody;
 
     }

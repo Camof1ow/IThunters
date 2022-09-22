@@ -284,7 +284,6 @@ public class MemberService {
             throw new CustomException(ErrorCode.DUPLICATE_PHONENUMBER);
         }
         checkPhoneNumber(requestDto.getPhoneNumber());
-        System.out.println(requestDto.getPhoneNumber() + "메시지 발송 완료");
         return smsService.sendSms(requestDto.getPhoneNumber());
     }
 
