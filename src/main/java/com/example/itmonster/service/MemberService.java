@@ -180,14 +180,20 @@ public class MemberService {
 
 
     //username 중복체크
-    public ResponseEntity<String> checkUsername(SignupRequestDto requestDto) {
+    public ResponseDto<String> checkUsername(SignupRequestDto requestDto) {
         checkEmailPattern(requestDto.getEmail());
-        return new ResponseEntity<>("사용 가능한 이메일입니다.", HttpStatus.OK);
+        if (memberRepository.existsByEmail(requestDto.getEmail())){
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+        }
+        return ResponseDto.success("사용가능한 이메일입니다.");
     }
 
-    public ResponseEntity<String> checkNickname(SignupRequestDto requestDto) {
+    public ResponseDto<String> checkNickname(SignupRequestDto requestDto) {
         checkNicknamePattern(requestDto.getNickname());
-        return new ResponseEntity<>("사용 가능한 닉네임입니다.", HttpStatus.OK);
+        if(memberRepository.existsByNickname(requestDto.getNickname())) {
+            throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
+        }
+        return ResponseDto.success("사용 가능한 닉네임입니다.");
     }
 
 

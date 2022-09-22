@@ -46,14 +46,13 @@ public class SmsService {
     @Value("${spring.naver.serviceId}")
     String serviceId;        									// 프로젝트에 할당된 SMS 서비스 ID
     String method = "POST";											// 요청 method
-    String timestamp = Long.toString(System.currentTimeMillis()); 	// current timestamp (epoch)
 
 
     @Transactional
     public String sendSms(String to) throws NoSuchAlgorithmException, InvalidKeyException {
         if(redisUtil.getData(to) != null) return "60초 후 재시도하여 주십시오";
-
         if(to.length() != 11) throw new CustomException(ErrorCode.PHONENUMBER_LENGTH);
+        String timestamp = Long.toString(System.currentTimeMillis());
 
         //난수생성
         int authNo = (int)(Math.random() * (9999 - 1000 + 1)) + 1000;
@@ -103,22 +102,24 @@ public class SmsService {
 
 
 
-    public static String makeSignature(String url, String timestamp, String method, String accessKey, String secretKey) throws NoSuchAlgorithmException, InvalidKeyException {
+    public static String makeSignature(String url, String timestamp,
+                                        String method, String accessKey, String secretKey)
+        throws NoSuchAlgorithmException, InvalidKeyException {
+
         String space = " ";
         String newLine = "\n";
 
-        String message = new StringBuilder()
-                .append(method)
-                .append(space)
-                .append(url)
-                .append(newLine)
-                .append(timestamp)
-                .append(newLine)
-                .append(accessKey)
-                .toString();
+        String message = method
+            + space
+            + url
+            + newLine
+            + timestamp
+            + newLine
+            + accessKey;
 
         SecretKeySpec signingKey;
         String encodeBase64String;
+
         try {
             signingKey = new SecretKeySpec(secretKey.getBytes("UTF-8"), "HmacSHA256");
             Mac mac = Mac.getInstance("HmacSHA256");

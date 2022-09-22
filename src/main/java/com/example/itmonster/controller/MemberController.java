@@ -37,13 +37,13 @@ public class MemberController {
 
 	//username 중복체크
 	@PostMapping("/api/members/checkId")
-	public ResponseEntity checkUsername(@RequestBody SignupRequestDto requestDto) {
+	public ResponseDto<String> checkUsername(@RequestBody SignupRequestDto requestDto) {
 		return memberService.checkUsername(requestDto);
 	}
 
 	//닉네임 중복체크
 	@PostMapping("/api/members/checkNickname")
-	public ResponseEntity checkNickname(@RequestBody SignupRequestDto requestDto) {
+	public ResponseDto<String> checkNickname(@RequestBody SignupRequestDto requestDto) {
 		return memberService.checkNickname(requestDto);
 	}
 
