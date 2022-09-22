@@ -1,6 +1,7 @@
 package com.example.itmonster.controller;
 
 import com.amazonaws.services.xray.model.Http;
+import com.example.itmonster.controller.response.ResponseDto;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.service.GoogleOAuthService;
@@ -36,10 +37,10 @@ public class SocialLoginController {
 
     //카카오 로그인
     @GetMapping("/oauth/kakao/callback")
-    public ResponseEntity<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
+    public ResponseDto<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
 
         try { // 회원가입 진행 성공시
-            return ResponseEntity.ok("카카오 로그인 성공\n"+kakaoUserService.kakaoLogin(code, response));
+            return ResponseDto.success("카카오 로그인 성공\n"+kakaoUserService.kakaoLogin(code, response));
 
         } catch (Exception e) { // 에러나면 false
             throw new CustomException(ErrorCode.INVALID_KAKAO_LOGIN_ATTEMPT);

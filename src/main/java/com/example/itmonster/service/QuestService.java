@@ -6,28 +6,37 @@ import com.example.itmonster.controller.response.MainQuestResponseDto;
 import com.example.itmonster.controller.response.QuestResponseDto;
 import com.example.itmonster.controller.response.RecentQuestResponseDto;
 import com.example.itmonster.controller.response.StackDto;
-import com.example.itmonster.domain.*;
+import com.example.itmonster.domain.Bookmark;
+import com.example.itmonster.domain.Channel;
+import com.example.itmonster.domain.Member;
+import com.example.itmonster.domain.MemberInChannel;
+import com.example.itmonster.domain.Quest;
+import com.example.itmonster.domain.Squad;
+import com.example.itmonster.domain.StackOfQuest;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
-import com.example.itmonster.repository.*;
+import com.example.itmonster.repository.BookmarkRepository;
+import com.example.itmonster.repository.CommentRepository;
+import com.example.itmonster.repository.MemberInChannelRepository;
+import com.example.itmonster.repository.QuestRepository;
+import com.example.itmonster.repository.SquadRepository;
+import com.example.itmonster.repository.StackOfQuestRepository;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.utils.SearchPredicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
