@@ -13,6 +13,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -81,6 +82,7 @@ public class SmsService {
         //Naver api 요청발송
         HttpEntity<String> entity = new HttpEntity<>(bodyJson.toString(), headers);
         RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         ResponseEntity<String> response = restTemplate.exchange(
                 "https://sens.apigw.ntruss.com/sms/v2/services/"+serviceId+"/messages",
                 HttpMethod.POST,
@@ -91,10 +93,6 @@ public class SmsService {
         String responseBody = response.getBody();
         //발송 실패시 로직 구현필요
         System.out.println(responseBody);
-
-        if(responseBody.contains("errors")){
-            throw new CustomException(ErrorCode.FAILED_MESSAGE);
-        }
         System.out.println(bodyJson);
         System.out.println(to + "메시지 발송 완료");
         return responseBody;

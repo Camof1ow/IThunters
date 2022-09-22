@@ -278,13 +278,15 @@ public class MemberService {
     }
 
 
-    public String sendSmsForSignup(SmsRequestDto requestDto)
+    public ResponseDto<String> sendSmsForSignup(SmsRequestDto requestDto)
         throws NoSuchAlgorithmException, InvalidKeyException {
         if(memberRepository.existsByPhoneNumber(requestDto.getPhoneNumber())){
             throw new CustomException(ErrorCode.DUPLICATE_PHONENUMBER);
         }
         checkPhoneNumber(requestDto.getPhoneNumber());
-        return smsService.sendSms(requestDto.getPhoneNumber());
+        String response =smsService.sendSms(requestDto.getPhoneNumber());
+        if(response.contains("errors")){throw new CustomException(ErrorCode.FAILED_MESSAGE);}
+        return ResponseDto.success(response);
     }
 
     public Boolean confirmPhoneNumber(SmsRequestDto requestDto){

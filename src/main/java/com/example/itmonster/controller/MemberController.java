@@ -76,8 +76,7 @@ public class MemberController {
 	@PostMapping("/api/members/sendSmsForSignup")
 	public ResponseDto<String> sendSmsForSignup(@RequestBody SmsRequestDto requestDto)
 		throws NoSuchAlgorithmException, InvalidKeyException {
-		String response = memberService.sendSmsForSignup(requestDto);
-		return ResponseDto.success(response);
+		return memberService.sendSmsForSignup(requestDto);
 	}
 
 	@PostMapping("/api/members/confirmPhoneNumber")
