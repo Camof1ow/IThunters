@@ -9,9 +9,10 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 public interface QuestRepository extends JpaRepository<Quest, Long>,
     QuerydslPredicateExecutor<Quest> {
     List<Quest> findAllByOrderByModifiedAtDesc();
-    List<Quest> findTop3ByOrderByModifiedAtDesc();
+
+    List<Quest> findTop3ByIsCompleteFalseOrderByModifiedAtDesc();
 
     List<Quest> findAllByMember(Member questOwner);
 
-    List<Quest> findTop3ByOrderByBookmarkCntDesc();
+    List<Quest> findTop3ByIsCompleteFalseOrderByBookmarkCntDesc();
 }

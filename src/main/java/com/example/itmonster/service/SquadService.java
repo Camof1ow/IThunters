@@ -75,6 +75,7 @@ public class SquadService {
         }
 
         questRepository.save(quest);
+        quest.updateStatus(quest);
 
         Channel channel = channelRepository.getChannelByQuest(quest);
 
@@ -118,11 +119,17 @@ public class SquadService {
 
     // 스쿼드에서 멤버 삭제
     @Transactional
-    public boolean deleteSquadMember(Long squadId) {
+    public boolean deleteSquadMember(Long squadId, Member member) {
 
         Squad squad = squadRepository.findById(squadId).orElseThrow(
             () -> new CustomException(ErrorCode.SQUAD_MEMBER_NOT_FOUND)   // 에러 : 스쿼드에 멤버가 존재하지 않음.
         );
+
+        Member questOwner = squad.getQuest().getMember();
+
+        if (!Objects.equals(questOwner.getId(), member.getId()) && !Objects.equals(squad.getMember().getId(), member.getId())) {
+            throw new CustomException(ErrorCode.INVALID_AUTHORITY);   // 본인이나 퀘스트리더만 탈퇴 가능
+        }
         squadRepository.delete(squad);
         return true;
     }

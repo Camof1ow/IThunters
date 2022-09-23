@@ -18,6 +18,8 @@ public interface MemberRepository extends JpaRepository<Member, Long>, QuerydslP
 
     Optional<Member> findBySocialId(String socialId);
 
+    Optional<Member> findByPhoneNumber(String phoneNum);
+
     List<Member> findAllByNicknameContaining(String nickname);
 
     List<Member> findTop3ByOrderByFollowCounter();
@@ -25,4 +27,6 @@ public interface MemberRepository extends JpaRepository<Member, Long>, QuerydslP
     boolean existsByEmail(String email);
 
     boolean existsByNickname(String nickname);
+
+    boolean existsByPhoneNumber(String phoneNumber);
 }

@@ -43,8 +43,8 @@ public class Member extends Timestamped {
 	@Column
 	private String profileImg;
 
-	@Column(nullable = true)
-	private String phoneNum;
+	@Column(nullable = false, unique = true)
+	private String phoneNumber;
 
 	@Column(unique = true)
 	private String socialId;
@@ -55,7 +55,6 @@ public class Member extends Timestamped {
 
 	@Formula("(select count(*) from follow where follow.me_id=id)")
 	private Long followCounter;
-
 
 	@OneToMany(mappedBy = "member")
 	private List<StackOfMember> stackOfMemberList;
@@ -81,7 +80,7 @@ public class Member extends Timestamped {
 
 
 	public void updatePhoneNumber(String phoneNum) {
-		this.phoneNum = phoneNum;
+		this.phoneNumber = phoneNum;
 	}
 
 	public void updateStack(List<StackOfMember> stackOfMemberList) {

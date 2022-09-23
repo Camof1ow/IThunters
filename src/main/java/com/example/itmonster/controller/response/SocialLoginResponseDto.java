@@ -11,7 +11,7 @@ public class SocialLoginResponseDto {
 
     private final String nickname;
 
-    private final String phoneNum;
+    private final String phoneNumber;
 
     private final boolean login;
 
@@ -21,7 +21,7 @@ public class SocialLoginResponseDto {
     public SocialLoginResponseDto(Member member, boolean login) {
         this.userId = member.getId();
         this.nickname = member.getNickname();
-        this.phoneNum = member.getPhoneNum();
+        this.phoneNumber = member.getPhoneNumber();
         this.login = login;  //login true/ false 상황
         this.profileImage = member.getProfileImg();
     }

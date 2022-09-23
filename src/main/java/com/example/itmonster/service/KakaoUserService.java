@@ -11,10 +11,12 @@ import com.example.itmonster.security.jwt.JwtTokenUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Random;
 import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
+import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -27,6 +29,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -44,6 +47,23 @@ public class KakaoUserService {
 
 	private final PasswordEncoder passwordEncoder;
 	private final MemberRepository memberRepository;
+
+
+	@Transactional(readOnly = true)
+	public String connect(HttpSession session) {
+		// state 난수 생성
+		SecureRandom random = new SecureRandom();
+		String state = new BigInteger(130, random).toString(32);
+		session.setAttribute("state", state); // state를 세션에 저장
+
+		// redirect
+		return "https://kauth.kakao.com/oauth/authorize?"
+			+ "client_id=" + kakaoClientId
+			+ "&redirect_uri=" + kakaoRedirect
+			+ "&response_type=code";
+	}
+
+
 
 	// 카카오 로그인
 	@Transactional
@@ -65,6 +85,9 @@ public class KakaoUserService {
 		System.out.println("카카오 로그인 4번 접근");
 		return jwtTokenCreate(kakaoUser, response);
 	}
+
+
+
 
 	// 1. "인가 코드"로 "액세스 토큰" 요청
 	private String getAccessToken(String code) throws JsonProcessingException {
@@ -156,6 +179,7 @@ public class KakaoUserService {
 			if (memberRepository.existsByEmail(email)) {
 				throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
 			}
+
 			String nickname = kakaoUserInfo.getNickname();
 			if (memberRepository.existsByNickname(nickname)) {
 				Random rnd = new Random();
@@ -170,6 +194,8 @@ public class KakaoUserService {
 			String encodedPassword = passwordEncoder.encode(password); // 비밀번호 암호화
 			String profileImage = kakaoUserInfo.getProfileImage();
 			RoleEnum role = RoleEnum.USER; // 가입할 때 일반사용자로 로그인
+			String dummyNumber = "";
+			long random = (long)(Math.random() * (99999999999L - 10000000000L + 1)) + 10000000000L;
 
 			kakaoUser = Member.builder().
 				email(email)
@@ -177,8 +203,7 @@ public class KakaoUserService {
 				.password(encodedPassword)
 				.profileImg(profileImage)
 				.role(role)
-				.phoneNum(null)
-				.followCounter(0L)
+				.phoneNumber(dummyNumber+random)
 				.socialId(socialId).build();
 
 			memberRepository.save(kakaoUser);

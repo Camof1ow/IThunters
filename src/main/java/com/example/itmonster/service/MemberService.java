@@ -2,10 +2,12 @@ package com.example.itmonster.service;
 
 import com.example.itmonster.controller.request.MemberStacksDto;
 import com.example.itmonster.controller.request.SignupRequestDto;
+import com.example.itmonster.controller.request.SmsRequestDto;
 import com.example.itmonster.controller.response.CompletedQuestDto;
 import com.example.itmonster.controller.response.FollowResponseDto;
 import com.example.itmonster.controller.response.MemberResponseDto;
 import com.example.itmonster.controller.response.MyPageResponseDto;
+import com.example.itmonster.controller.response.ResponseDto;
 import com.example.itmonster.controller.response.SocialLoginResponseDto;
 import com.example.itmonster.controller.response.StackDto;
 import com.example.itmonster.domain.Folio;
@@ -20,9 +22,13 @@ import com.example.itmonster.repository.FollowRepository;
 import com.example.itmonster.repository.MemberRepository;
 import com.example.itmonster.repository.StackOfMemberRepository;
 import com.example.itmonster.security.UserDetailsImpl;
+import com.example.itmonster.utils.RedisUtil;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -45,6 +51,8 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final AwsS3Service s3Service;
     private final FolioRepository folioRepository;
+    private final RedisUtil redisUtil;
+    private final SmsService smsService;
 
 
     String emailPattern = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"; //이메일 정규식 패턴
@@ -56,13 +64,17 @@ public class MemberService {
 //    String ADMIN_TOKEN;
 
     @Transactional
-    public ResponseEntity<String> signupUser(SignupRequestDto requestDto) throws IOException {
+    public String signupUser(SignupRequestDto requestDto) throws IOException {
 
         String profileUrl = s3Service.getSavedS3ImageUrl(requestDto.getProfileImage());
+        if(!Objects.equals(redisUtil.getData(requestDto.getPhoneNumber()), "true")){
+            throw new CustomException(ErrorCode.FAILED_VERIFYING_PHONENUMBER);
+        }
 
         checkEmailPattern(requestDto.getEmail());//username 정규식 맞지 않는 경우 오류메시지 전달
         checkNicknamePattern(requestDto.getNickname());//nickname 정규식 맞지 않는 경우 오류메시지 전달
         checkPasswordPattern(requestDto.getPassword());//password 정규식 맞지 않는 경우 오류메시지 전달
+        checkPhoneNumber(requestDto.getPhoneNumber());
 
         String password = passwordEncoder.encode(requestDto.getPassword()); // 패스워드 암호화
 
@@ -71,9 +83,8 @@ public class MemberService {
                 .nickname(requestDto.getNickname())
                 .password(password)
                 .profileImg(profileUrl)
-                .phoneNum(null)
+                .phoneNumber(requestDto.getPhoneNumber())
                 .role(RoleEnum.USER)
-                .followCounter(0L)
                 .build();
         memberRepository.save(member);
 
@@ -82,13 +93,15 @@ public class MemberService {
             .title(member.getNickname() + "님의 포트폴리오입니다.")
             .member(member)
             .build());
+        //인증된 전화번호 REDIS 삭제
+        redisUtil.deleteData(requestDto.getPhoneNumber());
 
-        return new ResponseEntity<>("회원가입을 축하합니다", HttpStatus.OK);
+        return "회원가입을 축하합니다";
     }
 
 
     @Transactional
-    public ResponseEntity followMember(Long memberId, Member me) {
+    public ResponseEntity<FollowResponseDto> followMember(Long memberId, Member me) {
         Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)); // 팔로우 할 멤버 확인
 
@@ -167,14 +180,20 @@ public class MemberService {
 
 
     //username 중복체크
-    public ResponseEntity checkUsername(SignupRequestDto requestDto) {
+    public ResponseDto<String> checkUsername(SignupRequestDto requestDto) {
         checkEmailPattern(requestDto.getEmail());
-        return new ResponseEntity("사용 가능한 이메일입니다.", HttpStatus.OK);
+        if (memberRepository.existsByEmail(requestDto.getEmail())){
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+        }
+        return ResponseDto.success("사용가능한 이메일입니다.");
     }
 
-    public ResponseEntity checkNickname(SignupRequestDto requestDto) {
+    public ResponseDto<String> checkNickname(SignupRequestDto requestDto) {
         checkNicknamePattern(requestDto.getNickname());
-        return new ResponseEntity("사용 가능한 닉네임입니다.", HttpStatus.OK);
+        if(memberRepository.existsByNickname(requestDto.getNickname())) {
+            throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
+        }
+        return ResponseDto.success("사용 가능한 닉네임입니다.");
     }
 
 
@@ -216,7 +235,7 @@ public class MemberService {
 
 
     //소셜로그인 사용자 정보 조회
-    public ResponseEntity socialUserInfo(UserDetailsImpl userDetails) {
+    public ResponseDto<SocialLoginResponseDto> socialUserInfo(UserDetailsImpl userDetails) {
         //로그인 한 user 정보 검색
         Member member = memberRepository.findBySocialId(userDetails.getMember().getSocialId())
                 .orElseThrow(
@@ -224,7 +243,7 @@ public class MemberService {
 
         //찾은 user엔티티를 dto로 변환해서 반환하기
         SocialLoginResponseDto socialLoginResponseDto = new SocialLoginResponseDto(member, true);
-        return ResponseEntity.ok().body(socialLoginResponseDto);
+        return ResponseDto.success(socialLoginResponseDto);
     }
 
 
@@ -251,7 +270,7 @@ public class MemberService {
         if (!Pattern.matches(nicknamePattern, nickname)) throw new CustomException(ErrorCode.NICKNAME_WRONG);
     }
 
-    public void checkPhoneNumb(String phoneNum) {
+    public void checkPhoneNumber(String phoneNum) {
         if (phoneNum == null) throw new CustomException(ErrorCode.EMPTY_PHONENUMBER);
         if (phoneNum.equals("")) throw new CustomException(ErrorCode.EMPTY_PHONENUMBER);
         if (phoneNum.length() != 11) throw new CustomException(ErrorCode.PHONENUMBER_LENGTH);
@@ -265,6 +284,32 @@ public class MemberService {
     }
 
 
+    public ResponseDto<String> sendSmsForSignup(SmsRequestDto requestDto)
+        throws NoSuchAlgorithmException, InvalidKeyException {
+        if(memberRepository.existsByPhoneNumber(requestDto.getPhoneNumber())){
+            throw new CustomException(ErrorCode.DUPLICATE_PHONENUMBER);
+        }
+        checkPhoneNumber(requestDto.getPhoneNumber());
+        String response =smsService.sendSms(requestDto.getPhoneNumber());
+        if(response.contains("errors")){throw new CustomException(ErrorCode.FAILED_MESSAGE);}
+        return ResponseDto.success(response);
+    }
+
+    public Boolean confirmPhoneNumber(SmsRequestDto requestDto){
+        String phoneNumber = requestDto.getPhoneNumber();
+        if (Objects.equals(redisUtil.getData(phoneNumber), "true")){
+            return Boolean.TRUE;
+        }// 이미 인증번호 인증을 마친 경우
+
+        if(!Objects.equals(redisUtil.getData(phoneNumber), requestDto.getAuthNumber())){
+            throw new CustomException(ErrorCode.FAILED_VERIFYING_AUTH);
+        }// 인증번호가 일치하지 않은경우
+
+
+        redisUtil.deleteData(requestDto.getPhoneNumber());
+        redisUtil.setDataExpire(phoneNumber,"true",300);
+        return Boolean.TRUE;
+    }
 }
 
 

@@ -17,6 +17,7 @@ public class QuestResponseDto implements Serializable { // 댓글 조회, 기술
     private String content;
     private Long duration;
     private boolean status;
+    private boolean isComplete;
     private ClassDto classes;
     private Long bookmarkCnt;
     private Long commentCnt; //<댓글 기능 추가 후>

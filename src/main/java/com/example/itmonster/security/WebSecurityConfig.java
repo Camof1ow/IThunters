@@ -155,6 +155,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         skipPathList.add("POST,/api/members/signup");  //회원가입
         skipPathList.add("POST,/api/members/checkId");  //username 중복 체크
         skipPathList.add("POST,/api/members/checkNickname");  //nickname 중복 체크
+        skipPathList.add("POST,/api/members/findUsername"); // username 찾기
+        skipPathList.add("POST,/api/members/sendAuth"); // 인증번호 발송
+        skipPathList.add("POST,/api/members/sendSmsForSignup"); // 인증번호 발송
+        skipPathList.add("POST,/api/members/confirmPhoneNumber"); // 인증번호 발송
+
 
         //main 화면
         skipPathList.add("GET,/api/monster/month"); // main 화면
