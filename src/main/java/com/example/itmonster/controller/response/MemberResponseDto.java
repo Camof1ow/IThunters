@@ -13,6 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberResponseDto implements Serializable {
+  private static final long serialVersionUID = 5778203755690043226L;
+
   private Long id;
   private String nickname;
   private String profileImage;

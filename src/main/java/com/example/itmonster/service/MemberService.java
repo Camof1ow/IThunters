@@ -317,7 +317,7 @@ public class MemberService {
     }
 
     @CacheEvict(value = "monsterOfMonthCaching", allEntries = true)
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 12 22 * * *")
     public void deleteCache() {
     }
 

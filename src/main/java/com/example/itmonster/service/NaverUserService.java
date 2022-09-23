@@ -1,10 +1,12 @@
 package com.example.itmonster.service;
 
 import com.example.itmonster.controller.response.SocialUserInfoDto;
+import com.example.itmonster.domain.Folio;
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.RoleEnum;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
+import com.example.itmonster.repository.FolioRepository;
 import com.example.itmonster.repository.MemberRepository;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.security.jwt.JwtTokenUtils;
@@ -52,6 +54,7 @@ public class NaverUserService {
 
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
+    private final FolioRepository folioRepository;
 
     @Transactional(readOnly = true)
     public String naverConnect(HttpSession session) {
@@ -159,7 +162,7 @@ public class NaverUserService {
             profileImage = defaultImage; // 우리 사이트 기본 이미지
         }
 
-        return new SocialUserInfoDto(socialId, email, nickname, profileImage);
+        return new SocialUserInfoDto(socialId, nickname, email, profileImage);
     }
 
     // 3. 유저확인 & 회원가입
@@ -200,6 +203,12 @@ public class NaverUserService {
                 .phoneNumber(dummyNumber+random)
                 .socialId(socialId).build();
             memberRepository.save(naverUser);
+
+            // 빈 포트폴리오 생성
+            folioRepository.save(Folio.builder()
+                .title(naverUser.getNickname() + "님의 포트폴리오입니다.")
+                .member(naverUser)
+                .build());
         }
 
         return naverUser;

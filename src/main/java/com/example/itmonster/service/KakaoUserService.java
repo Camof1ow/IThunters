@@ -1,10 +1,12 @@
 package com.example.itmonster.service;
 
 import com.example.itmonster.controller.response.SocialUserInfoDto;
+import com.example.itmonster.domain.Folio;
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.RoleEnum;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
+import com.example.itmonster.repository.FolioRepository;
 import com.example.itmonster.repository.MemberRepository;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.security.jwt.JwtTokenUtils;
@@ -51,6 +53,7 @@ public class KakaoUserService {
 
 	private final PasswordEncoder passwordEncoder;
 	private final MemberRepository memberRepository;
+	private final FolioRepository folioRepository;
 
 
 	@Transactional(readOnly = true)
@@ -212,6 +215,12 @@ public class KakaoUserService {
 				.socialId(socialId).build();
 
 			memberRepository.save(kakaoUser);
+
+			// 빈 포트폴리오 생성
+			folioRepository.save(Folio.builder()
+				.title(kakaoUser.getNickname() + "님의 포트폴리오입니다.")
+				.member(kakaoUser)
+				.build());
 		}
 
 		return kakaoUser;
