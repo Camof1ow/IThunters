@@ -52,7 +52,9 @@ public class SocialLoginController {
     @GetMapping("/oauth/main")
     public ResponseEntity<String> naverLogin(@RequestParam String code, @RequestParam String state, HttpServletResponse response) {
         try { // 회원가입 진행 성공시
-            return ResponseEntity.ok("네이버 로그인 성공\n"+naverUserService.naverLogin(code, state, response));
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(URI.create(naverUserService.naverLogin(code, state, response)));
+            return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
         } catch (Exception e) { // 에러나면 false
             throw new CustomException(ErrorCode.INVALID_NAVER_LOGIN_ATTEMPT);
         }
