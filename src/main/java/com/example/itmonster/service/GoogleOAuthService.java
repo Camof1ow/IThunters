@@ -6,6 +6,7 @@ import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.MemberRepository;
 import com.example.itmonster.security.jwt.JwtTokenUtils;
+import java.io.IOException;
 import java.util.Random;
 import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
