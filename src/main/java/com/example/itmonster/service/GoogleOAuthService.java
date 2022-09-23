@@ -6,6 +6,7 @@ import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.MemberRepository;
 import com.example.itmonster.security.jwt.JwtTokenUtils;
+import java.io.IOException;
 import java.util.Random;
 import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
@@ -21,6 +22,7 @@ public class GoogleOAuthService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final HttpServletResponse response;
 
     @Transactional
     public String login( OAuth2User oAuth2User , HttpServletResponse response ) {
@@ -64,5 +66,9 @@ public class GoogleOAuthService {
 
         //TODO: 2. token 을 생성해준다.
         return token;
+    }
+
+    public void request() throws IOException {
+        response.sendRedirect("https://g10000.shop/oauth2/authorization/google");
     }
 }

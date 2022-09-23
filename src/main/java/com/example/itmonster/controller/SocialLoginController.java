@@ -6,6 +6,7 @@ import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.service.GoogleOAuthService;
 import com.example.itmonster.service.KakaoUserService;
 import com.example.itmonster.service.NaverUserService;
+import java.io.IOException;
 import java.net.URI;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -75,4 +76,9 @@ public class SocialLoginController {
     public ResponseEntity<String> login ( @AuthenticationPrincipal OAuth2User oAuth2User , HttpServletResponse response) {
         return ResponseEntity.ok( googleOAuthService.login( oAuth2User,response ) );
     }
+    @GetMapping("/oauth/google/loginpage")
+    public void loginPage () throws IOException {
+        googleOAuthService.request();
+    }
+
 }
