@@ -47,6 +47,8 @@ public class NaverUserService {
     private String naverClientSecret;
     @Value("${spring.security.oauth2.client.registration.naver.redirect-uri}")
     private String naverRedirectUri;
+    @Value("${spring.redirect.main-url}")
+    private String mainRedirectUri;
 
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
@@ -220,7 +222,7 @@ public class NaverUserService {
         String token = JwtTokenUtils.generateJwtToken(userDetailsImpl);
         response.addHeader("Authorization", "Bearer " + token);
 
-        Cookie cookie = new Cookie("Authorization", token); // 쿠키생성
+        Cookie cookie = new Cookie("user_token", "BEARER%20" + token); // 쿠키생성
 
         cookie.setMaxAge(7*24*60*60); // 쿠키 만료 7일
 
@@ -230,6 +232,6 @@ public class NaverUserService {
 
         response.addCookie(cookie);
 
-        return naverRedirectUri;
+        return mainRedirectUri;
     }
 }
