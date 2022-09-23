@@ -15,6 +15,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
 import java.util.UUID;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -218,6 +219,17 @@ public class NaverUserService {
         UserDetailsImpl userDetailsImpl = ((UserDetailsImpl) authentication.getPrincipal());
         String token = JwtTokenUtils.generateJwtToken(userDetailsImpl);
         response.addHeader("Authorization", "Bearer " + token);
-        return token;
+
+        Cookie cookie = new Cookie("Authorization", token); // 쿠키생성
+
+        cookie.setMaxAge(7*24*60*60); // 쿠키 만료 7일
+
+        cookie.setSecure(true);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+
+        response.addCookie(cookie);
+
+        return naverRedirectUri;
     }
 }
