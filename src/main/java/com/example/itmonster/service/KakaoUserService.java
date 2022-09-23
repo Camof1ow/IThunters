@@ -15,6 +15,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
 import java.util.UUID;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,9 @@ public class KakaoUserService {
 	String kakaoClientSecret;
 	@Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
 	String kakaoRedirect;
+
+	@Value("${spring.redirect.main-url}")
+	String mainRedirectUri;
 
 	private final PasswordEncoder passwordEncoder;
 	private final MemberRepository memberRepository;
@@ -83,7 +87,8 @@ public class KakaoUserService {
 
 		// 4. 강제 로그인 처리 & jwt 토큰 발급
 		System.out.println("카카오 로그인 4번 접근");
-		return jwtTokenCreate(kakaoUser, response);
+		return redirectWithCookie(kakaoUser, response);
+
 	}
 
 
@@ -213,7 +218,7 @@ public class KakaoUserService {
 	}
 
 	// 4. 강제 로그인 처리 & jwt 토큰 발급
-	private String jwtTokenCreate(Member kakaoUser, HttpServletResponse response) {
+	private String redirectWithCookie(Member kakaoUser, HttpServletResponse response) {
 		UserDetails userDetails = new UserDetailsImpl(kakaoUser);
 		Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
 			userDetails.getAuthorities());
@@ -225,8 +230,17 @@ public class KakaoUserService {
 		String token = JwtTokenUtils.generateJwtToken(userDetails1);
 		response.setContentType("application/json; charset=utf-8");
 		response.addHeader("Authorization", "BEARER" + " " + token);
+		Cookie cookie = new Cookie("user_token", "BEARER%20"+token); // 쿠키생성
 
-		return token;
+		cookie.setMaxAge(7*24*60*60); // 쿠키 만료 7일
+
+		cookie.setSecure(true);
+		cookie.setHttpOnly(true);
+		cookie.setPath("/");
+
+		response.addCookie(cookie);
+
+		return mainRedirectUri; // 추후 서비스 주소
 	}
 }
 
