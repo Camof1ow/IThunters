@@ -79,4 +79,5 @@ public class SocialLoginController {
     public void loginPage () throws IOException {
         googleOAuthService.request();
     }
+
 }

@@ -22,6 +22,7 @@ public class GoogleOAuthService {
     private final HttpServletResponse response;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final HttpServletResponse response;
 
     @Transactional
     public String login( OAuth2User oAuth2User , HttpServletResponse response ) {
