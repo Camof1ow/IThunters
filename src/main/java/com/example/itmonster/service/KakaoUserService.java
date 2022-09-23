@@ -51,6 +51,9 @@ public class KakaoUserService {
 	@Value("${spring.redirect.main-url}")
 	String mainRedirectUri;
 
+	@Value("${spring.redirect.cookie-domain}")
+	String cookieDomain;
+
 	private final PasswordEncoder passwordEncoder;
 	private final MemberRepository memberRepository;
 	private final FolioRepository folioRepository;
@@ -234,6 +237,8 @@ public class KakaoUserService {
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		// 강제로그인 시도까지 함, 여기까진 평범한 로그인과 같음
 		System.out.println("강제로그인");
+
+
 		// 여기부터 토큰 프론트에 넘기는것
 		UserDetailsImpl userDetails1 = ((UserDetailsImpl) authentication.getPrincipal());
 		String token = JwtTokenUtils.generateJwtToken(userDetails1);
@@ -242,7 +247,7 @@ public class KakaoUserService {
 		Cookie cookie = new Cookie("user_token", "BEARER%20"+token); // 쿠키생성
 
 		cookie.setMaxAge(7*24*60*60); // 쿠키 만료 7일
-		cookie.setDomain("localhost");
+		cookie.setDomain(cookieDomain);
 		cookie.setSecure(true);
 		cookie.setHttpOnly(true);
 		cookie.setPath("/");
