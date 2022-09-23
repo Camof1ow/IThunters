@@ -75,4 +75,8 @@ public class SocialLoginController {
     public ResponseEntity<String> login ( @AuthenticationPrincipal OAuth2User oAuth2User , HttpServletResponse response) {
         return ResponseEntity.ok( googleOAuthService.login( oAuth2User,response ) );
     }
+    @GetMapping("/oauth/google/loginpage")
+    public void loginPage () throws IOException {
+        googleOAuthService.request();
+    }
 }

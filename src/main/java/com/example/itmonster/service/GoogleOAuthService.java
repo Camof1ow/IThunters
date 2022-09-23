@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class GoogleOAuthService {
 
+    private final HttpServletResponse response;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -64,5 +65,9 @@ public class GoogleOAuthService {
 
         //TODO: 2. token 을 생성해준다.
         return token;
+    }
+
+    public void request() throws IOException {
+        response.sendRedirect("https://g10000.shop/oauth2/authorization/google");
     }
 }
