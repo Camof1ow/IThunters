@@ -249,7 +249,6 @@ public class KakaoUserService {
 		cookie.setMaxAge(7*24*60*60); // 쿠키 만료 7일
 		cookie.setDomain(cookieDomain);
 		cookie.setSecure(true);
-		cookie.setHttpOnly(true);
 		cookie.setPath("/");
 
 		response.addCookie(cookie);
