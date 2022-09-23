@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberResponseDto implements Serializable {
+  private Long id;
   private String nickname;
   private String profileImage;
   private List<StackDto> stacks;

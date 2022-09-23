@@ -67,7 +67,7 @@ public class MemberService {
     public String signupUser(SignupRequestDto requestDto) throws IOException {
 
         String profileUrl = s3Service.getSavedS3ImageUrl(requestDto.getProfileImage());
-        if(!Objects.equals(redisUtil.getData(requestDto.getPhoneNumber()), "true")){
+        if (!Objects.equals(redisUtil.getData(requestDto.getPhoneNumber()), "true")) {
             throw new CustomException(ErrorCode.FAILED_VERIFYING_PHONENUMBER);
         }
 
@@ -79,13 +79,13 @@ public class MemberService {
         String password = passwordEncoder.encode(requestDto.getPassword()); // 패스워드 암호화
 
         Member member = Member.builder()
-                .email(requestDto.getEmail())
-                .nickname(requestDto.getNickname())
-                .password(password)
-                .profileImg(profileUrl)
-                .phoneNumber(requestDto.getPhoneNumber())
-                .role(RoleEnum.USER)
-                .build();
+            .email(requestDto.getEmail())
+            .nickname(requestDto.getNickname())
+            .password(password)
+            .profileImg(profileUrl)
+            .phoneNumber(requestDto.getPhoneNumber())
+            .role(RoleEnum.USER)
+            .build();
         memberRepository.save(member);
 
         // 빈 포트폴리오 생성
@@ -103,22 +103,22 @@ public class MemberService {
     @Transactional
     public ResponseEntity<FollowResponseDto> followMember(Long memberId, Member me) {
         Member member = memberRepository.findById(memberId).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)); // 팔로우 할 멤버 확인
+            () -> new CustomException(ErrorCode.USER_NOT_FOUND)); // 팔로우 할 멤버 확인
 
         if (followRepository.findByFollowingIdAndMeId(  // 팔로우 한 적 없으면 팔로우등록
-                memberId, me.getId()) == null) {
+            memberId, me.getId()) == null) {
             followRepository.save(Follow.builder()
-                    .me(me)
-                    .following(member)
-                    .build());
+                .me(me)
+                .following(member)
+                .build());
             memberRepository.save(member);
             return ResponseEntity.ok(FollowResponseDto.builder()
-                    .follow(true).build());
+                .follow(true).build());
 
         } else { //팔로우 한적 있으면 취소
 
             Follow follow = followRepository.findByFollowingIdAndMeId(
-                    memberId, me.getId());
+                memberId, me.getId());
             followRepository.delete(follow);
             memberRepository.save(member);
 
@@ -127,18 +127,19 @@ public class MemberService {
     }
 
     @Transactional
-    public ResponseEntity<String> addStack(MemberStacksDto memberStacksDto, Member member) { // 기술스택 추가
+    public ResponseEntity<String> addStack(MemberStacksDto memberStacksDto,
+        Member member) { // 기술스택 추가
         List<String> Stacks = memberStacksDto.getStacks();
         StringBuilder response = new StringBuilder();
-        for(String stackname:Stacks){
-            if(stackOfMemberRepository.existsByMemberIdAndStackName(member.getId(), stackname)){
+        for (String stackname : Stacks) {
+            if (stackOfMemberRepository.existsByMemberIdAndStackName(member.getId(), stackname)) {
                 response.append("[").append(stackname).append("] 중복됨\n");
 
 
-            }else {
+            } else {
                 StackOfMember stack = StackOfMember.builder()
-                .stackName(stackname)
-                .member(member).build();
+                    .stackName(stackname)
+                    .member(member).build();
                 stackOfMemberRepository.save(stack);
                 response.append("[").append(stackname).append("] 추가됨\n");
             }
@@ -148,12 +149,15 @@ public class MemberService {
         return ResponseEntity.ok(response.toString());
     }
 
-    public List<StackDto> getStackList(Member member){
+    public List<StackDto> getStackList(Member member) {
         List<StackDto> stacks = new ArrayList<>();
-        List<StackOfMember> stackOfMemberList = stackOfMemberRepository.findByMemberId(member.getId());
-        if(stackOfMemberList.size() == 0L) return stacks;
+        List<StackOfMember> stackOfMemberList = stackOfMemberRepository.findByMemberId(
+            member.getId());
+        if (stackOfMemberList.size() == 0L) {
+            return stacks;
+        }
 
-        for(StackOfMember stack : stackOfMemberList){
+        for (StackOfMember stack : stackOfMemberList) {
             stacks.add(new StackDto(stack.getStackName()));
         }
 
@@ -167,12 +171,13 @@ public class MemberService {
         List<MemberResponseDto> responseDtoList = new ArrayList<>();
         for (Member member : members) {
             responseDtoList.add(MemberResponseDto.builder()
-                    .nickname(member.getNickname())
-                    .profileImage(member.getProfileImg())
-                    .stacks(getStackList(member))
-                    .followCnt(member.getFollowCounter())
-                    .folioTitle(folioRepository.findByMemberId(member.getId()).getTitle())
-                    .build());
+                .id(member.getId())
+                .nickname(member.getNickname())
+                .profileImage(member.getProfileImg())
+                .stacks(getStackList(member))
+                .followCnt(member.getFollowCounter())
+                .folioTitle(folioRepository.findByMemberId(member.getId()).getTitle())
+                .build());
 
         }
         return responseDtoList;
@@ -182,7 +187,7 @@ public class MemberService {
     //username 중복체크
     public ResponseDto<String> checkUsername(SignupRequestDto requestDto) {
         checkEmailPattern(requestDto.getEmail());
-        if (memberRepository.existsByEmail(requestDto.getEmail())){
+        if (memberRepository.existsByEmail(requestDto.getEmail())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
         return ResponseDto.success("사용가능한 이메일입니다.");
@@ -190,25 +195,26 @@ public class MemberService {
 
     public ResponseDto<String> checkNickname(SignupRequestDto requestDto) {
         checkNicknamePattern(requestDto.getNickname());
-        if(memberRepository.existsByNickname(requestDto.getNickname())) {
+        if (memberRepository.existsByNickname(requestDto.getNickname())) {
             throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
         }
         return ResponseDto.success("사용 가능한 닉네임입니다.");
     }
 
 
-    public MemberResponseDto memberInfo (Member member){
+    public MemberResponseDto memberInfo(Member member) {
 
         return MemberResponseDto.builder()
-                .nickname(member.getNickname())
-                .profileImage(member.getProfileImg())
-                .stacks(getStackList(member))
-                .followCnt(member.getFollowCounter())
-                .folioTitle(member.getNickname() + "님의 포트폴리오 제목")
-                .build();
+            .id(member.getId())
+            .nickname(member.getNickname())
+            .profileImage(member.getProfileImg())
+            .stacks(getStackList(member))
+            .followCnt(member.getFollowCounter())
+            .folioTitle(member.getNickname() + "님의 포트폴리오 제목")
+            .build();
     }
 
-    public MyPageResponseDto getMyPage(Long memberId){
+    public MyPageResponseDto getMyPage(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(
             () -> new CustomException(ErrorCode.USER_NOT_FOUND));
         Folio folio = folioRepository.findByMemberId(memberId);
@@ -238,8 +244,8 @@ public class MemberService {
     public ResponseDto<SocialLoginResponseDto> socialUserInfo(UserDetailsImpl userDetails) {
         //로그인 한 user 정보 검색
         Member member = memberRepository.findBySocialId(userDetails.getMember().getSocialId())
-                .orElseThrow(
-                        () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         //찾은 user엔티티를 dto로 변환해서 반환하기
         SocialLoginResponseDto socialLoginResponseDto = new SocialLoginResponseDto(member, true);
@@ -248,70 +254,102 @@ public class MemberService {
 
 
     public void checkEmailPattern(String email) {
-        if (email == null) throw new CustomException(ErrorCode.EMPTY_EMAIL);
-        if (email.equals("")) throw new CustomException(ErrorCode.EMPTY_EMAIL);
-        if (!Pattern.matches(emailPattern, email)) throw new CustomException(ErrorCode.EMAIL_WRONG);
-        if (memberRepository.findByEmail(email).isPresent()) throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+        if (email == null) {
+            throw new CustomException(ErrorCode.EMPTY_EMAIL);
+        }
+        if (email.equals("")) {
+            throw new CustomException(ErrorCode.EMPTY_EMAIL);
+        }
+        if (!Pattern.matches(emailPattern, email)) {
+            throw new CustomException(ErrorCode.EMAIL_WRONG);
+        }
+        if (memberRepository.findByEmail(email).isPresent()) {
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+        }
     }
 
 
     public void checkPasswordPattern(String password) {
-        if (password == null) throw new CustomException(ErrorCode.EMPTY_PASSWORD);
-        if (password.equals("")) throw new CustomException(ErrorCode.EMPTY_PASSWORD);
-        if (8 > password.length() || 20 < password.length()) throw new CustomException(ErrorCode.PASSWORD_LEGNTH);
-        if (!Pattern.matches(passwordPattern, password)) throw new CustomException(ErrorCode.PASSWORD_WRONG);
+        if (password == null) {
+            throw new CustomException(ErrorCode.EMPTY_PASSWORD);
+        }
+        if (password.equals("")) {
+            throw new CustomException(ErrorCode.EMPTY_PASSWORD);
+        }
+        if (8 > password.length() || 20 < password.length()) {
+            throw new CustomException(ErrorCode.PASSWORD_LEGNTH);
+        }
+        if (!Pattern.matches(passwordPattern, password)) {
+            throw new CustomException(ErrorCode.PASSWORD_WRONG);
+        }
     }
 
 
     public void checkNicknamePattern(String nickname) {
-        if (nickname == null) throw new CustomException(ErrorCode.EMPTY_NICKNAME);
-        if (nickname.equals("")) throw new CustomException(ErrorCode.EMPTY_NICKNAME);
-        if (2 > nickname.length() || 8 < nickname.length()) throw new CustomException(ErrorCode.NICKNAME_LEGNTH);
-        if (!Pattern.matches(nicknamePattern, nickname)) throw new CustomException(ErrorCode.NICKNAME_WRONG);
+        if (nickname == null) {
+            throw new CustomException(ErrorCode.EMPTY_NICKNAME);
+        }
+        if (nickname.equals("")) {
+            throw new CustomException(ErrorCode.EMPTY_NICKNAME);
+        }
+        if (2 > nickname.length() || 8 < nickname.length()) {
+            throw new CustomException(ErrorCode.NICKNAME_LEGNTH);
+        }
+        if (!Pattern.matches(nicknamePattern, nickname)) {
+            throw new CustomException(ErrorCode.NICKNAME_WRONG);
+        }
     }
 
     public void checkPhoneNumber(String phoneNum) {
-        if (phoneNum == null) throw new CustomException(ErrorCode.EMPTY_PHONENUMBER);
-        if (phoneNum.equals("")) throw new CustomException(ErrorCode.EMPTY_PHONENUMBER);
-        if (phoneNum.length() != 11) throw new CustomException(ErrorCode.PHONENUMBER_LENGTH);
-        if (!Pattern.matches(phoneNumPattern, phoneNum)) throw new CustomException(ErrorCode.PHONENUMBER_WRONG);
+        if (phoneNum == null) {
+            throw new CustomException(ErrorCode.EMPTY_PHONENUMBER);
+        }
+        if (phoneNum.equals("")) {
+            throw new CustomException(ErrorCode.EMPTY_PHONENUMBER);
+        }
+        if (phoneNum.length() != 11) {
+            throw new CustomException(ErrorCode.PHONENUMBER_LENGTH);
+        }
+        if (!Pattern.matches(phoneNumPattern, phoneNum)) {
+            throw new CustomException(ErrorCode.PHONENUMBER_WRONG);
+        }
 
     }
 
     @CacheEvict(value = "monsterOfMonthCaching", allEntries = true)
     @Scheduled(cron = "0 0 0 * * *")
-    public void deleteCache(){
+    public void deleteCache() {
     }
 
 
     public ResponseDto<String> sendSmsForSignup(SmsRequestDto requestDto)
         throws NoSuchAlgorithmException, InvalidKeyException {
-        if(memberRepository.existsByPhoneNumber(requestDto.getPhoneNumber())){
+        if (memberRepository.existsByPhoneNumber(requestDto.getPhoneNumber())) {
             throw new CustomException(ErrorCode.DUPLICATE_PHONENUMBER);
         }
         checkPhoneNumber(requestDto.getPhoneNumber());
-        String response =smsService.sendSms(requestDto.getPhoneNumber());
-        if(response.contains("errors")){throw new CustomException(ErrorCode.FAILED_MESSAGE);}
+        String response = smsService.sendSms(requestDto.getPhoneNumber());
+        if (response.contains("errors")) {
+            throw new CustomException(ErrorCode.FAILED_MESSAGE);
+        }
         return ResponseDto.success(response);
     }
 
-    public Boolean confirmPhoneNumber(SmsRequestDto requestDto){
+    public Boolean confirmPhoneNumber(SmsRequestDto requestDto) {
         String phoneNumber = requestDto.getPhoneNumber();
-        if (Objects.equals(redisUtil.getData(phoneNumber), "true")){
+        if (Objects.equals(redisUtil.getData(phoneNumber), "true")) {
             return Boolean.TRUE;
         }// 이미 인증번호 인증을 마친 경우
 
-        if(!Objects.equals(redisUtil.getData(phoneNumber), requestDto.getAuthNumber())){
+        if (!Objects.equals(redisUtil.getData(phoneNumber), requestDto.getAuthNumber())) {
             throw new CustomException(ErrorCode.FAILED_VERIFYING_AUTH);
         }// 인증번호가 일치하지 않은경우
 
-
         redisUtil.deleteData(requestDto.getPhoneNumber());
-        redisUtil.setDataExpire(phoneNumber,"true",300);
+        redisUtil.setDataExpire(phoneNumber, "true", 300);
         return Boolean.TRUE;
     }
 }
-
 
 //로그인 후 관리자 권한 얻을 수 있는 API 관리자 접근 가능 페이지 없슴
 //    public ResponseEntity adminAuthorization(AdminRequestDto requestDto, UserDetailsImpl userDetails) {
