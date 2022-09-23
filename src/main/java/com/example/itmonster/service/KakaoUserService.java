@@ -233,7 +233,7 @@ public class KakaoUserService {
 		Cookie cookie = new Cookie("user_token", "BEARER%20"+token); // 쿠키생성
 
 		cookie.setMaxAge(7*24*60*60); // 쿠키 만료 7일
-		cookie.setDomain("localhost");
+		cookie.setDomain(".it-monsters.co.kr");
 		cookie.setSecure(true);
 		cookie.setHttpOnly(true);
 		cookie.setPath("/");
