@@ -180,14 +180,20 @@ public class MemberService {
 
 
     //username 중복체크
-    public ResponseEntity<String> checkUsername(SignupRequestDto requestDto) {
+    public ResponseDto<String> checkUsername(SignupRequestDto requestDto) {
         checkEmailPattern(requestDto.getEmail());
-        return new ResponseEntity<>("사용 가능한 이메일입니다.", HttpStatus.OK);
+        if (memberRepository.existsByEmail(requestDto.getEmail())){
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+        }
+        return ResponseDto.success("사용가능한 이메일입니다.");
     }
 
-    public ResponseEntity<String> checkNickname(SignupRequestDto requestDto) {
+    public ResponseDto<String> checkNickname(SignupRequestDto requestDto) {
         checkNicknamePattern(requestDto.getNickname());
-        return new ResponseEntity<>("사용 가능한 닉네임입니다.", HttpStatus.OK);
+        if(memberRepository.existsByNickname(requestDto.getNickname())) {
+            throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
+        }
+        return ResponseDto.success("사용 가능한 닉네임입니다.");
     }
 
 
@@ -278,24 +284,27 @@ public class MemberService {
     }
 
 
-    public String sendSmsForSignup(SmsRequestDto requestDto)
+    public ResponseDto<String> sendSmsForSignup(SmsRequestDto requestDto)
         throws NoSuchAlgorithmException, InvalidKeyException {
         if(memberRepository.existsByPhoneNumber(requestDto.getPhoneNumber())){
             throw new CustomException(ErrorCode.DUPLICATE_PHONENUMBER);
         }
         checkPhoneNumber(requestDto.getPhoneNumber());
-        return smsService.sendSms(requestDto.getPhoneNumber());
+        String response =smsService.sendSms(requestDto.getPhoneNumber());
+        if(response.contains("errors")){throw new CustomException(ErrorCode.FAILED_MESSAGE);}
+        return ResponseDto.success(response);
     }
 
     public Boolean confirmPhoneNumber(SmsRequestDto requestDto){
         String phoneNumber = requestDto.getPhoneNumber();
+        if (Objects.equals(redisUtil.getData(phoneNumber), "true")){
+            return Boolean.TRUE;
+        }// 이미 인증번호 인증을 마친 경우
 
         if(!Objects.equals(redisUtil.getData(phoneNumber), requestDto.getAuthNumber())){
             throw new CustomException(ErrorCode.FAILED_VERIFYING_AUTH);
         }// 인증번호가 일치하지 않은경우
-        if (Objects.equals(redisUtil.getData(requestDto.getPhoneNumber()), "true")){
-            return Boolean.TRUE;
-        }// 이미 인증번호 인증을 마친 경우
+
 
         redisUtil.deleteData(requestDto.getPhoneNumber());
         redisUtil.setDataExpire(phoneNumber,"true",300);

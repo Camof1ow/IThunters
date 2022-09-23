@@ -33,7 +33,7 @@ public class SocialLoginController {
     public ResponseDto<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
 
         try { // 회원가입 진행 성공시
-            return ResponseDto.success("카카오 로그인 성공\n"+kakaoUserService.kakaoLogin(code, response));
+            return ResponseDto.success(kakaoUserService.kakaoLogin(code, response));
 
         } catch (Exception e) { // 에러나면 false
             throw new CustomException(ErrorCode.INVALID_KAKAO_LOGIN_ATTEMPT);

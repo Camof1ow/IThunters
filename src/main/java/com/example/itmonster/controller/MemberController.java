@@ -37,13 +37,13 @@ public class MemberController {
 
 	//username 중복체크
 	@PostMapping("/api/members/checkId")
-	public ResponseEntity checkUsername(@RequestBody SignupRequestDto requestDto) {
+	public ResponseDto<String> checkUsername(@RequestBody SignupRequestDto requestDto) {
 		return memberService.checkUsername(requestDto);
 	}
 
 	//닉네임 중복체크
 	@PostMapping("/api/members/checkNickname")
-	public ResponseEntity checkNickname(@RequestBody SignupRequestDto requestDto) {
+	public ResponseDto<String> checkNickname(@RequestBody SignupRequestDto requestDto) {
 		return memberService.checkNickname(requestDto);
 	}
 
@@ -76,8 +76,7 @@ public class MemberController {
 	@PostMapping("/api/members/sendSmsForSignup")
 	public ResponseDto<String> sendSmsForSignup(@RequestBody SmsRequestDto requestDto)
 		throws NoSuchAlgorithmException, InvalidKeyException {
-		String response = memberService.sendSmsForSignup(requestDto);
-		return ResponseDto.success(response);
+		return memberService.sendSmsForSignup(requestDto);
 	}
 
 	@PostMapping("/api/members/confirmPhoneNumber")

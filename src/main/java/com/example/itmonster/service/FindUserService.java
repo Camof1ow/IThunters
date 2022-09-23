@@ -9,9 +9,8 @@ import com.example.itmonster.utils.RedisUtil;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,27 +23,37 @@ public class FindUserService {
 
     private final RedisUtil redisUtil;
 
+
+    String phoneNumPattern = "^(\\d{11})$"; // 11자리 숫자
     // 인증번호 발송
-    public Boolean sendSmsForFindUsername(SmsRequestDto smsRequestDto) throws NoSuchAlgorithmException, InvalidKeyException {
-        if(memberRepository.findByPhoneNumber(smsRequestDto.getPhoneNumber()).isEmpty()){
+    public String sendSmsForFindUsername(SmsRequestDto smsRequestDto) throws NoSuchAlgorithmException, InvalidKeyException {
+        checkPhoneNumber(smsRequestDto.getPhoneNumber()); // 입력전화번호 유효성 검사
+        if(!memberRepository.existsByPhoneNumber(smsRequestDto.getPhoneNumber())){
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
-        String phoneNum = smsRequestDto.getPhoneNumber();
-        smsService.sendSms(phoneNum);
-        return true;
+        String response = smsService.sendSms(smsRequestDto.getPhoneNumber());
+        if(response.contains("errors")){throw new CustomException(ErrorCode.FAILED_MESSAGE);} // 메시지 발송실패시 예외처리
+        return response;
     }
 
-    public ResponseEntity<String> findUsername(SmsRequestDto smsRequestDto) {
+    public String findUsername(SmsRequestDto smsRequestDto) {
+        checkPhoneNumber(smsRequestDto.getPhoneNumber()); // 입력전화번호 유효성 검사
+        String authNum = redisUtil.getData(smsRequestDto.getPhoneNumber());
         Member member = memberRepository.findByPhoneNumber(smsRequestDto.getPhoneNumber())
                 .orElseThrow(() -> new CustomException(ErrorCode.EMPTY_MEMBER));
-        //String authNum = smsRequestDto.getAuthNo();
-        String authNum = redisUtil.getData(smsRequestDto.getPhoneNumber());
-
-        if (!Objects.equals(authNum, smsRequestDto.getPhoneNumber())) {
-            return new ResponseEntity<>("인증번호가 일치하지 않습니다.", HttpStatus.OK);
+        if (!Objects.equals(authNum, smsRequestDto.getAuthNumber())) {
+            throw new CustomException(ErrorCode.FAILED_VERIFYING_AUTH);
         }
-        return new ResponseEntity<>(member.getEmail(), HttpStatus.OK);
+        return member.getEmail();
+    }
+
+    public void checkPhoneNumber(String phoneNum) {
+        if (phoneNum == null) throw new CustomException(ErrorCode.EMPTY_PHONENUMBER);
+        if (phoneNum.equals("")) throw new CustomException(ErrorCode.EMPTY_PHONENUMBER);
+        if (phoneNum.length() != 11) throw new CustomException(ErrorCode.PHONENUMBER_LENGTH);
+        if (!Pattern.matches(phoneNumPattern, phoneNum)) throw new CustomException(ErrorCode.PHONENUMBER_WRONG);
+
     }
 
 
