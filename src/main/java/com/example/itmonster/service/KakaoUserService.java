@@ -48,12 +48,6 @@ public class KakaoUserService {
 	@Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
 	String kakaoRedirect;
 
-	@Value("${spring.redirect.main-url}")
-	String mainRedirectUri;
-
-	@Value("${spring.redirect.cookie-domain}")
-	String cookieDomain;
-
 	private final PasswordEncoder passwordEncoder;
 	private final MemberRepository memberRepository;
 	private final FolioRepository folioRepository;
@@ -244,15 +238,8 @@ public class KakaoUserService {
 		String token = JwtTokenUtils.generateJwtToken(userDetails1);
 		response.setContentType("application/json; charset=utf-8");
 		response.addHeader("Authorization", "BEARER" + " " + token);
-		Cookie cookie = new Cookie("user_token", "BEARER%20"+token); // 쿠키생성
 
-		cookie.setMaxAge(7*24*60*60); // 쿠키 만료 7일
-		cookie.setDomain(cookieDomain);
-		cookie.setPath("/");
-
-		response.addCookie(cookie);
-
-		return mainRedirectUri; // 추후 서비스 주소
+		return token;
 	}
 }
 

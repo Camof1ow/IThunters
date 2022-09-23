@@ -31,12 +31,10 @@ public class SocialLoginController {
 
     //카카오 로그인
     @GetMapping("/oauth/kakao/callback")
-    public ResponseEntity<HttpHeaders> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
+    public ResponseDto<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) {
 
         try { // 회원가입 진행 성공시
-            HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create(kakaoUserService.kakaoLogin(code, response)));
-            return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
+            return ResponseDto.success(kakaoUserService.kakaoLogin(code, response));
 
         } catch (Exception e) { // 에러나면 false
             throw new CustomException(ErrorCode.INVALID_KAKAO_LOGIN_ATTEMPT);
