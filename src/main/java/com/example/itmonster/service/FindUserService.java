@@ -27,16 +27,18 @@ public class FindUserService {
     String phoneNumPattern = "^(\\d{11})$"; // 11자리 숫자
     // 인증번호 발송
     public String sendSmsForFindUsername(SmsRequestDto smsRequestDto) throws NoSuchAlgorithmException, InvalidKeyException {
+        checkPhoneNumber(smsRequestDto.getPhoneNumber()); // 입력전화번호 유효성 검사
         if(!memberRepository.existsByPhoneNumber(smsRequestDto.getPhoneNumber())){
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
-        checkPhoneNumber(smsRequestDto.getPhoneNumber()); // 입력전화번호 유효성 검사
+
         String response = smsService.sendSms(smsRequestDto.getPhoneNumber());
         if(response.contains("errors")){throw new CustomException(ErrorCode.FAILED_MESSAGE);} // 메시지 발송실패시 예외처리
         return response;
     }
 
     public String findUsername(SmsRequestDto smsRequestDto) {
+        checkPhoneNumber(smsRequestDto.getPhoneNumber()); // 입력전화번호 유효성 검사
         String authNum = redisUtil.getData(smsRequestDto.getPhoneNumber());
         Member member = memberRepository.findByPhoneNumber(smsRequestDto.getPhoneNumber())
                 .orElseThrow(() -> new CustomException(ErrorCode.EMPTY_MEMBER));
