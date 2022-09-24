@@ -72,7 +72,10 @@ public class SocialLoginController {
         return ResponseEntity.ok( googleOAuthService.login( oAuth2User,response ) );
     }
     @GetMapping("/oauth/google/loginpage")
-    public void loginPage () throws IOException {
-        googleOAuthService.request();
+    public ResponseEntity<?> loginPage () throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create("http://g10000.shop/oauth2/authorization/google"));
+        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
+//        googleOAuthService.request();
     }
 }
