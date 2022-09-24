@@ -51,19 +51,16 @@ public class SocialLoginController {
 
     // 네이버 로그인에 필요한 code와 state 생성하고 네이버 로그인 api 요청
     @GetMapping("/oauth/naver")
-    public ResponseEntity<?> naverConnect(HttpSession session){
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(naverUserService.naverConnect(session)));
-        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
+    public String naverConnect(HttpSession session){
+        return naverUserService.naverConnect(session);
     }
 
     //네이버 로그인
-    @GetMapping("/oauth/main")
-    public ResponseEntity<String> naverLogin(@RequestParam String code, @RequestParam String state, HttpServletResponse response) {
+    @GetMapping("/oauth/naver/callback")
+    public ResponseDto<String> naverLogin(@RequestParam String code, @RequestParam String state, HttpServletResponse response) {
         try { // 회원가입 진행 성공시
-            HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create(naverUserService.naverLogin(code, state, response)));
-            return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
+            return ResponseDto.success(naverUserService.naverLogin(code, state, response));
+
         } catch (Exception e) { // 에러나면 false
             throw new CustomException(ErrorCode.INVALID_NAVER_LOGIN_ATTEMPT);
         }
@@ -81,5 +78,4 @@ public class SocialLoginController {
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
 //        googleOAuthService.request();
     }
-
 }

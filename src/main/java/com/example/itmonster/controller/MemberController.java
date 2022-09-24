@@ -84,6 +84,11 @@ public class MemberController {
 		return ResponseDto.success(memberService.confirmPhoneNumber(requestDto));
 	}
 
+	@PostMapping("/api/members/deleteCache")
+	public void deleteCacheTest(){
+		memberService.deleteCacheTest();
+	}
+
 	//로그인 후 관리자 권한 얻을 수 있는 API
 //  @PutMapping("/api/signup/admin")
 //  public ResponseEntity adminAuthorization(@RequestBody AdminRequestDto requestDto,
