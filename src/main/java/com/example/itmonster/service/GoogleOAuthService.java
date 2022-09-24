@@ -61,14 +61,8 @@ public class GoogleOAuthService {
             memberRepository.save(member);
         }
         String token = JwtTokenUtils.generateJwtTokenByOAuth2(oAuth2User);
-        response.setContentType("application/json; charset=utf-8");
-        response.addHeader("Authorization", "BEARER" + " " + token);
 
         //TODO: 2. token 을 생성해준다.
         return token;
-    }
-
-    public void request() throws IOException {
-        response.sendRedirect("https://g10000.shop/oauth2/authorization/google");
     }
 }

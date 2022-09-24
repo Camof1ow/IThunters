@@ -68,14 +68,10 @@ public class SocialLoginController {
 
     // 구글로그인
     @GetMapping("/oauth/google")
-    public ResponseEntity<String> login ( @AuthenticationPrincipal OAuth2User oAuth2User , HttpServletResponse response) {
-        return ResponseEntity.ok( googleOAuthService.login( oAuth2User,response ) );
-    }
-    @GetMapping("/oauth/google/loginpage")
-    public ResponseEntity<?> loginPage () throws IOException {
+    public ResponseEntity<HttpHeaders> login ( @AuthenticationPrincipal OAuth2User oAuth2User , HttpServletResponse response ){
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("http://g10000.shop/oauth2/authorization/google"));
+        headers.setLocation(URI.create("http://localhost:3000/auth?accessToken=" + googleOAuthService.login( oAuth2User,response )));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
-//        googleOAuthService.request();
     }
+
 }
