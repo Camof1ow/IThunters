@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -85,6 +84,7 @@ public class MemberService {
             .profileImg(profileUrl)
             .phoneNumber(requestDto.getPhoneNumber())
             .role(RoleEnum.USER)
+            .className("")
             .build();
         memberRepository.save(member);
 
@@ -97,6 +97,27 @@ public class MemberService {
         redisUtil.deleteData(requestDto.getPhoneNumber());
 
         return "회원가입을 축하합니다";
+    }
+
+
+    @Transactional
+    public MemberResponseDto updateMemberInfo(Member member,SignupRequestDto requestDto)
+        throws Exception {
+        checkNicknamePattern(requestDto.getNickname()); //닉네임 유효성 검사
+        if(memberRepository.existsByNickname(requestDto.getNickname())){ //닉네임 중복검사
+            throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
+        }
+
+        Member updateUser = memberRepository.findById(member.getId())
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        String profileImg = s3Service.getSavedS3ImageUrl(requestDto.getProfileImage());
+
+
+        updateUser.updateMemberInfo(requestDto.getNickname(), requestDto.getClassName(), profileImg);
+        memberRepository.save(updateUser);
+
+        return memberResponseBuild(updateUser);
     }
 
 
@@ -170,14 +191,7 @@ public class MemberService {
         List<Member> members = memberRepository.findTop3ByOrderByFollowCounter();
         List<MemberResponseDto> responseDtoList = new ArrayList<>();
         for (Member member : members) {
-            responseDtoList.add(MemberResponseDto.builder()
-                .id(member.getId())
-                .nickname(member.getNickname())
-                .profileImage(member.getProfileImg())
-                .stacks(getStackList(member))
-                .followCnt(member.getFollowCounter())
-                .folioTitle(folioRepository.findByMemberId(member.getId()).getTitle())
-                .build());
+            responseDtoList.add(memberResponseBuild(member));
 
         }
         return responseDtoList;
@@ -204,14 +218,7 @@ public class MemberService {
 
     public MemberResponseDto memberInfo(Member member) {
 
-        return MemberResponseDto.builder()
-            .id(member.getId())
-            .nickname(member.getNickname())
-            .profileImage(member.getProfileImg())
-            .stacks(getStackList(member))
-            .followCnt(member.getFollowCounter())
-            .folioTitle(member.getNickname() + "님의 포트폴리오 제목")
-            .build();
+        return memberResponseBuild(member);
     }
 
     public MyPageResponseDto getMyPage(Long memberId) {
@@ -352,6 +359,19 @@ public class MemberService {
         redisUtil.deleteData(requestDto.getPhoneNumber());
         redisUtil.setDataExpire(phoneNumber, "true", 300);
         return Boolean.TRUE;
+    }
+
+
+    public MemberResponseDto memberResponseBuild(Member member){
+        return MemberResponseDto.builder()
+            .id(member.getId())
+            .nickname(member.getNickname())
+            .profileImage(member.getProfileImg())
+            .stacks(getStackList(member))
+            .className(member.getClassName())
+            .followCnt(member.getFollowCounter())
+            .folioTitle(folioRepository.findByMemberId(member.getId()).getTitle())
+            .build();
     }
 }
 

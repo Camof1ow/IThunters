@@ -4,6 +4,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.example.itmonster.exceptionHandler.CustomException;
+import com.example.itmonster.exceptionHandler.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +34,7 @@ public class AwsS3Service {
 
 
     @Transactional
-    public String getSavedS3ImageUrl(String stringImage) throws IOException {
+    public String getSavedS3ImageUrl(String stringImage) throws CustomException, IOException {
 
         if (stringImage == null) {
             return defaultImg; // 사진 미등록시 기본 프로필로 등록
@@ -43,7 +45,7 @@ public class AwsS3Service {
 
 
         File file = convert(stringImage)  // 파일 변환할 수 없으면 에러
-                .orElseThrow(() -> new IllegalArgumentException("error: MultipartFile -> File convert fail"));
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_PROFILE));
         fileUrl = defaultEndpointUrl + "/" + fileName;
 
         uploadFileToS3Bucket(fileName, file);

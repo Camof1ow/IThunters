@@ -47,6 +47,7 @@ public class Quest extends Timestamped {
     @Formula("(select count(*) from bookmark where bookmark.quest_id=id)")
     private int bookmarkCnt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "quest")
     private List<StackOfQuest> stacks = new ArrayList<>();
 

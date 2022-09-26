@@ -38,6 +38,8 @@ public enum ErrorCode {
 
     EMPTY_FOLIO(HttpStatus.BAD_REQUEST,"포트폴리오가 존재하지 않습니다."),
 
+    INVALID_PROFILE(HttpStatus.BAD_REQUEST,"프로필 이미지가 올바르지 않습니다"),
+
 
     INVALID_OFFER_REQUEST(HttpStatus.BAD_REQUEST, "자신의 게시글에는 합류요청이 불가능합니다."),
     /*

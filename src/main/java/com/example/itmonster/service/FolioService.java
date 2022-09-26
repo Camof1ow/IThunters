@@ -22,15 +22,13 @@ public class FolioService {
 			folioRequestDto.getGithubUrl(), folioRequestDto.getBlogUrl());
 		folioRepository.save(folio);
 
-		FolioResponseDto response = FolioResponseDto.builder()
+		return FolioResponseDto.builder()
 			.nickname(member.getNickname())
 			.title(folio.getTitle())
 			.blogUrl(folio.getBlogUrl())
 			.notionUrl(folio.getNotionUrl())
 			.githubUrl(folio.getGithubUrl())
 			.build();
-
-		return response;
 	}
 
 

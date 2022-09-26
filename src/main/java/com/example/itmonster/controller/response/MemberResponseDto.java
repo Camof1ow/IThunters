@@ -1,12 +1,11 @@
 package com.example.itmonster.controller.response;
 
 import java.io.Serializable;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Builder
 @Getter
@@ -18,6 +17,7 @@ public class MemberResponseDto implements Serializable {
   private Long id;
   private String nickname;
   private String profileImage;
+  private String className;
   private List<StackDto> stacks;
   private Long followCnt;
   private String folioTitle;

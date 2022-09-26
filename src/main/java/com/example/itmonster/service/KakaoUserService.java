@@ -17,7 +17,6 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Random;
 import java.util.UUID;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -209,6 +208,7 @@ public class KakaoUserService {
 				.profileImg(profileImage)
 				.role(role)
 				.phoneNumber(dummyNumber+random)
+				.className("")
 				.socialId(socialId).build();
 
 			memberRepository.save(kakaoUser);

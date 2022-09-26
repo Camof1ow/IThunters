@@ -43,6 +43,9 @@ public class Member extends Timestamped {
 	@Column
 	private String profileImg;
 
+	@Column(nullable = false)
+	private String className;
+
 	@Column(nullable = false, unique = true)
 	private String phoneNumber;
 
@@ -79,8 +82,16 @@ public class Member extends Timestamped {
 	}
 
 
-	public void updatePhoneNumber(String phoneNum) {
-		this.phoneNumber = phoneNum;
+//	public void updatePhoneNumber(String phoneNum) {
+//		this.phoneNumber = phoneNum;
+//	}
+
+	public void updateMemberInfo(String nickname, String className,String profileImg){
+		this.nickname = nickname;
+		this.className = className;
+		this.profileImg = profileImg;
+
+
 	}
 
 	public void updateStack(List<StackOfMember> stackOfMemberList) {

@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -105,6 +106,13 @@ public class MemberController {
 	@GetMapping("/api/myPage/{memberId}")
 	public ResponseEntity getMyPage(@PathVariable Long memberId){
 		return ResponseEntity.ok(memberService.getMyPage(memberId));
+	}
+
+	@PutMapping("/api/members/update")
+	public ResponseDto<MemberResponseDto> updateMember(@AuthenticationPrincipal UserDetailsImpl userDetails,
+		@RequestBody SignupRequestDto requestDto) throws Exception {
+		MemberResponseDto responseBody = memberService.updateMemberInfo(userDetails.getMember(),requestDto);
+		return ResponseDto.success(responseBody);
 	}
 
 
