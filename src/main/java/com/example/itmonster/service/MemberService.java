@@ -4,7 +4,6 @@ import com.example.itmonster.controller.request.MemberStacksDto;
 import com.example.itmonster.controller.request.SignupRequestDto;
 import com.example.itmonster.controller.request.SmsRequestDto;
 import com.example.itmonster.controller.response.CompletedQuestDto;
-import com.example.itmonster.controller.response.FollowResponseDto;
 import com.example.itmonster.controller.response.MemberResponseDto;
 import com.example.itmonster.controller.response.MyPageResponseDto;
 import com.example.itmonster.controller.response.ResponseDto;
@@ -14,14 +13,18 @@ import com.example.itmonster.domain.Folio;
 import com.example.itmonster.domain.Follow;
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.RoleEnum;
+import com.example.itmonster.domain.Squad;
 import com.example.itmonster.domain.StackOfMember;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.FolioRepository;
 import com.example.itmonster.repository.FollowRepository;
 import com.example.itmonster.repository.MemberRepository;
+import com.example.itmonster.repository.QuestRepository;
+import com.example.itmonster.repository.SquadRepository;
 import com.example.itmonster.repository.StackOfMemberRepository;
 import com.example.itmonster.security.UserDetailsImpl;
+import com.example.itmonster.security.jwt.JwtDecoder;
 import com.example.itmonster.utils.RedisUtil;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -33,7 +36,6 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,6 +54,9 @@ public class MemberService {
 	private final FolioRepository folioRepository;
 	private final RedisUtil redisUtil;
 	private final SmsService smsService;
+	private final JwtDecoder jwtDecoder;
+	private final SquadRepository squadRepository;
+
 
 
 	String emailPattern = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"; //이메일 정규식 패턴
@@ -117,7 +122,7 @@ public class MemberService {
 			profileImg);
 		memberRepository.save(updateUser);
 
-		return memberResponseBuild(updateUser);
+		return memberResponseBuilder(updateUser);
 	}
 
 
@@ -183,7 +188,7 @@ public class MemberService {
 		List<Member> members = memberRepository.findTop3ByOrderByFollowCounter();
 		List<MemberResponseDto> responseDtoList = new ArrayList<>();
 		for (Member member : members) {
-			responseDtoList.add(memberResponseBuild(member));
+			responseDtoList.add(memberResponseBuilder(member));
 
 		}
 		return responseDtoList;
@@ -210,32 +215,39 @@ public class MemberService {
 
 	public MemberResponseDto memberInfo(Member member) {
 
-		return memberResponseBuild(member);
+		return memberResponseBuilder(member);
 	}
 
-	public MyPageResponseDto getMyPage(Long memberId) {
+	public MyPageResponseDto getMyPage(Long memberId, String token) {
+
 		Member member = memberRepository.findById(memberId).orElseThrow(
 			() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		Folio folio = folioRepository.findByMemberId(memberId);
-		List<CompletedQuestDto> completedQuestDtos = new ArrayList<>();
-//      완료된 퀘스트 가져오기 로직
-//        for(CompletedQuestDto completedQuestDto : completedQuestDtos){
-//          completedQuestDtos.add(CompletedQuestDto.builder()
-//              .questId()
-//              .questTitle().build())
-//
-//        }
 
-		return MyPageResponseDto.builder()
-			.memberId(memberId)
-			.profileUrl(member.getProfileImg())
-			.stackList(getStackList(member))
-			.title(folio.getTitle())
-			.notionUrl(folio.getNotionUrl())
-			.githubUrl(folio.getGithubUrl())
-			.blogUrl(folio.getBlogUrl())
-			.completedQuestList(completedQuestDtos)
-			.build();
+		List<Squad> squadList = squadRepository.findAllByMember(member);
+		List<CompletedQuestDto> completedQuestDtoList = new ArrayList<>();
+
+		for(Squad squad:squadList){
+			if(squad.getQuest().getIsComplete()){
+				completedQuestDtoList.add(CompletedQuestDto.builder()
+					.questId(squad.getId())
+					.questTitle(squad.getQuest().getTitle())
+					.build());
+			};
+		}
+
+		if(token != null){
+			String username = jwtDecoder.decodeUsername(token.substring(7));
+			Member me = memberRepository.findByEmail(username).orElseThrow(
+				() -> new CustomException(ErrorCode.INVALID_AUTH_TOKEN));
+
+			return myPageResponseBuilder(member,folio,completedQuestDtoList,true,
+				followRepository.existsByFollowingAndMe(member,me));
+		}  // 로그인 상태확인
+
+
+		return myPageResponseBuilder(member,folio,completedQuestDtoList,false,false);
+
 	}
 
 
@@ -354,7 +366,7 @@ public class MemberService {
 	}
 
 
-	public MemberResponseDto memberResponseBuild(Member member) {
+	public MemberResponseDto memberResponseBuilder(Member member) {
 		return MemberResponseDto.builder()
 			.id(member.getId())
 			.nickname(member.getNickname())
@@ -365,6 +377,24 @@ public class MemberService {
 			.folioTitle(folioRepository.findByMemberId(member.getId()).getTitle())
 			.build();
 	}
+
+	public MyPageResponseDto myPageResponseBuilder(Member member, Folio folio,
+		List<CompletedQuestDto> completedQuestDtos, Boolean login, Boolean followStatus) {
+
+		return MyPageResponseDto.builder()
+			.memberId(member.getId())
+			.profileUrl(member.getProfileImg())
+			.stackList(getStackList(member))
+			.title(folio.getTitle())
+			.notionUrl(folio.getNotionUrl())
+			.githubUrl(folio.getGithubUrl())
+			.blogUrl(folio.getBlogUrl())
+			.completedQuestList(completedQuestDtos)
+			.followStatus(followStatus)
+			.loginStatus(login)
+			.build();
+	}
+
 }
 
 //로그인 후 관리자 권한 얻을 수 있는 API 관리자 접근 가능 페이지 없슴

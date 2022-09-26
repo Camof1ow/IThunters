@@ -17,5 +17,7 @@ public class MyPageResponseDto {
 	private String githubUrl;
 	private String blogUrl;
 	private List<CompletedQuestDto> completedQuestList;
+	private Boolean followStatus;
+	private Boolean loginStatus;
 
 }

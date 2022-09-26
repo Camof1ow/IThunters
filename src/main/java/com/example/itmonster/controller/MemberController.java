@@ -3,7 +3,6 @@ package com.example.itmonster.controller;
 import com.example.itmonster.controller.request.MemberStacksDto;
 import com.example.itmonster.controller.request.SignupRequestDto;
 import com.example.itmonster.controller.request.SmsRequestDto;
-import com.example.itmonster.controller.response.FollowResponseDto;
 import com.example.itmonster.controller.response.MemberResponseDto;
 import com.example.itmonster.controller.response.ResponseDto;
 import com.example.itmonster.controller.response.SocialLoginResponseDto;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -105,8 +105,8 @@ public class MemberController {
 	}
 
 	@GetMapping("/api/myPage/{memberId}")
-	public ResponseEntity getMyPage(@PathVariable Long memberId){
-		return ResponseEntity.ok(memberService.getMyPage(memberId));
+	public ResponseEntity getMyPage(@PathVariable Long memberId, @RequestHeader(name = "Authorization",required = false)String token){
+		return ResponseEntity.ok(memberService.getMyPage(memberId, token));
 	}
 
 	@PutMapping("/api/members/update")
