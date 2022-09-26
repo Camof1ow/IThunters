@@ -3,6 +3,7 @@ package com.example.itmonster.controller;
 import com.example.itmonster.controller.request.MemberStacksDto;
 import com.example.itmonster.controller.request.SignupRequestDto;
 import com.example.itmonster.controller.request.SmsRequestDto;
+import com.example.itmonster.controller.response.FollowResponseDto;
 import com.example.itmonster.controller.response.MemberResponseDto;
 import com.example.itmonster.controller.response.ResponseDto;
 import com.example.itmonster.controller.response.SocialLoginResponseDto;
@@ -50,21 +51,21 @@ public class MemberController {
 
 	//멤버 팔로우
 	@PostMapping("/api/members/{memberId}/follow")
-	public ResponseEntity followMember(@PathVariable Long memberId,
+	public ResponseDto<Boolean> followMember(@PathVariable Long memberId,
 		@AuthenticationPrincipal UserDetailsImpl userDetails) {
 		return memberService.followMember(memberId, userDetails.getMember());
 	}
 
 	// 스택 추가
 	@PostMapping("/api/members/addStack")
-	public ResponseEntity<String> addStack(@RequestBody MemberStacksDto memberStacksDto,
+	public ResponseDto<List<String>> addStack(@RequestBody MemberStacksDto memberStacksDto,
 		@AuthenticationPrincipal UserDetailsImpl userDetails) {
 		return memberService.addStack(memberStacksDto, userDetails.getMember());
 	}
 
 	//이달의 회원 팔로우기준 top3
 	@GetMapping("/api/monster/month")
-	public ResponseEntity<List> showTop3Following() {
+	public ResponseEntity<List<MemberResponseDto>> showTop3Following() {
 		return ResponseEntity.ok(memberService.showTop3Following());
 	}
 

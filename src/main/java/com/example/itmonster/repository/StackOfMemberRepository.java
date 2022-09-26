@@ -9,5 +9,7 @@ public interface StackOfMemberRepository extends JpaRepository<StackOfMember,Lon
 
     List<StackOfMember> findByMemberId(Long memberId);
 
+    void deleteAllByMemberId (Long memberId);
+
     boolean existsByMemberIdAndStackName(Long memberId,String stackName);
 }
