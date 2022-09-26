@@ -41,13 +41,6 @@ public class SocialLoginController {
         }
     }
 
-    //카카오 로그인 요청
-    @GetMapping("/oauth/kakao")
-    public ResponseEntity<HttpHeaders> kakaoLoginConntect(HttpSession session) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(kakaoUserService.connect(session)));
-        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
-    }
 
     // 네이버 로그인에 필요한 code와 state 생성하고 네이버 로그인 api 요청
     @GetMapping("/oauth/naver")

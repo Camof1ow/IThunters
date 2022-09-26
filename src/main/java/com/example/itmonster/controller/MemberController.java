@@ -107,11 +107,5 @@ public class MemberController {
 		return ResponseEntity.ok(memberService.getMyPage(memberId));
 	}
 
-	//서버 동작상태 확인
-	@GetMapping("/health")
-	public String healthy() {
-		return "healthy";
-	}
-
 
 }

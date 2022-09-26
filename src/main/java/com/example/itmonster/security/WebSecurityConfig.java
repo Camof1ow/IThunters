@@ -176,6 +176,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         //무중단 배포 확인용
         skipPathList.add("GET,/health");
+        skipPathList.add("GET,/profile");
 
         skipPathList.add("GET,/auth/login");
 
