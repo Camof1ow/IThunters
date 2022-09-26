@@ -1,9 +1,11 @@
 package com.example.itmonster.service;
 
+import com.example.itmonster.domain.Folio;
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.RoleEnum;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
+import com.example.itmonster.repository.FolioRepository;
 import com.example.itmonster.repository.MemberRepository;
 import com.example.itmonster.security.jwt.JwtTokenUtils;
 import java.io.IOException;
@@ -22,6 +24,7 @@ public class GoogleOAuthService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FolioRepository folioRepository;
     private final HttpServletResponse response;
 
     @Transactional
@@ -52,16 +55,17 @@ public class GoogleOAuthService {
 
             Member member = Member.builder()
                 .email( email )
-                .nickname( nickname.toString() )
+                .nickname(nickname.toString())
                 .password( password )
                 .role( RoleEnum.USER )
                 .phoneNumber(dummyNumber+random)
                 .profileImg( imgUrl )
+                .className("")
                 .build();
             memberRepository.save(member);
 
-	folioRepository.save(Folio.builder()
-                .title( nickname.toString() + "님의 포트폴리오입니다.")
+            folioRepository.save(Folio.builder()
+                .title( nickname + "님의 포트폴리오입니다.")
                 .member( member )
                 .build());
         }
