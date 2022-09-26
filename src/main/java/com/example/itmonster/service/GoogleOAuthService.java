@@ -59,6 +59,11 @@ public class GoogleOAuthService {
                 .profileImg( imgUrl )
                 .build();
             memberRepository.save(member);
+
+	folioRepository.save(Folio.builder()
+                .title( nickname.toString() + "님의 포트폴리오입니다.")
+                .member( member )
+                .build());
         }
         String token = JwtTokenUtils.generateJwtTokenByOAuth2(oAuth2User);
 
