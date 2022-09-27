@@ -10,6 +10,8 @@ import lombok.Getter;
 public class MyPageResponseDto {
 
 	private Long memberId;
+	private String nickname;
+	private String className;
 	private String profileUrl;
 	private List<StackDto> stackList;
 	private String title;

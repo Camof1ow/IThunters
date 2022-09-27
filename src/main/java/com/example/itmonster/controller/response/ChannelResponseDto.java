@@ -1,15 +1,13 @@
 package com.example.itmonster.controller.response;
 
 import com.example.itmonster.domain.Channel;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class ChannelResponseDto {
-    private final Long id;
-    private final String channelName;
-
-    public ChannelResponseDto(Channel channel){
-        this.id = channel.getId();
-        this.channelName = channel.getChannelName();
-    }
+    private Long id;
+    private String channelName;
+    private String lastMessage;
 }
