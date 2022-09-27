@@ -16,7 +16,7 @@ public class MessageResponseDto implements Serializable {
     private Long channelId;
     private String content;
     private String createdAt;
-    private Long  memberId;
+    private Long memberId;
     private String nickname;
     private String profileImg;
 

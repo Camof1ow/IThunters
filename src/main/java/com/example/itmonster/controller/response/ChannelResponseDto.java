@@ -10,4 +10,5 @@ public class ChannelResponseDto {
     private Long id;
     private String channelName;
     private String lastMessage;
+    private String imgUrl;
 }
