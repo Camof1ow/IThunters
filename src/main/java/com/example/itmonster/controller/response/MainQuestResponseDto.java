@@ -22,6 +22,7 @@ public class MainQuestResponseDto implements Serializable { // 댓글 조회, �
 	private ClassDto classes;
 	private Long bookmarkCnt;
 	private Long commentCnt; //<댓글 기능 추가 후>
+	private LocalDateTime createdAt;
 	private List<String> stacks;
 }
 

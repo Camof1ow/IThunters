@@ -254,6 +254,7 @@ public class QuestService {
             .classes(new ClassDto(quest))
             .bookmarkCnt(bookmarkRepository.countAllByQuest(quest))
             .commentCnt(commentRepository.countAllByQuest(quest))
+	.createdAt( quest.getCreatedAt() )
             .stacks(temp)
             .build();
     }
