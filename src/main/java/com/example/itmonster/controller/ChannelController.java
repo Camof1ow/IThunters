@@ -1,6 +1,7 @@
 package com.example.itmonster.controller;
 
 import com.example.itmonster.controller.response.ChannelResponseDto;
+import com.example.itmonster.controller.response.ChatSquadInfoDto;
 import com.example.itmonster.domain.Channel;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.service.ChannelService;
@@ -23,5 +24,10 @@ public class ChannelController {
     @GetMapping("")
     public List<ChannelResponseDto> readChannel(@AuthenticationPrincipal UserDetailsImpl userDetails){
         return channelService.readChannel(userDetails);
+    }
+
+    @GetMapping("/{channelId}/squad")
+    public ChatSquadInfoDto readChatSquadInfo(@PathVariable Long channelId){
+        return channelService.readChatSquadInfo(channelId);
     }
 }
