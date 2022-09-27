@@ -1,7 +1,7 @@
 version: 0.0
 os: linux
 files:
-  - source:  /
+  - source: /
     destination: /home/ubuntu/itmonster
     overwrite: yes
 
@@ -14,5 +14,8 @@ permissions:
 
 hooks:
   AfterInstall:
-    - location: scripts/deploy.sh
+    - location: /home/ubuntu/itmonster/deploy/deploy.sh
+      runas: ubuntu
+
+    - location: /home/ubuntu/itmonster/deploy/switch.sh
       runas: ubuntu

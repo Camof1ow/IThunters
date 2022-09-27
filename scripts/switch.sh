@@ -5,10 +5,10 @@ SWITCH_LOG_PATH="/home/ubuntu/itmonster/switch.log"
 echo "> 현재 구동중인  Port 확인" >> $SWITCH_LOG_PATH
 CURRENT_PROFILE=$(curl -s http://localhost/profile)
 echo "> ${CURRENT_PROFILE}" >> $SWITCH_LOG_PATH
-if [ $CURRENT_PROFILE == 1 ]
+if [ "$CURRENT_PROFILE" == 1 ]
 then
   IDLE_PORT=8082
-elif [ $CURRENT_PROFILE == 2 ]
+elif [ "$CURRENT_PROFILE" == 2 ]
 then
   IDLE_PORT=8081
 else

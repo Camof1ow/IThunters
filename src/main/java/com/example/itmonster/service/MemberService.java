@@ -20,7 +20,6 @@ import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.FolioRepository;
 import com.example.itmonster.repository.FollowRepository;
 import com.example.itmonster.repository.MemberRepository;
-import com.example.itmonster.repository.QuestRepository;
 import com.example.itmonster.repository.SquadRepository;
 import com.example.itmonster.repository.StackOfMemberRepository;
 import com.example.itmonster.security.UserDetailsImpl;
@@ -56,7 +55,6 @@ public class MemberService {
 	private final SmsService smsService;
 	private final JwtDecoder jwtDecoder;
 	private final SquadRepository squadRepository;
-
 
 
 	String emailPattern = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"; //이메일 정규식 패턴
@@ -108,18 +106,22 @@ public class MemberService {
 	@Transactional
 	public MemberResponseDto updateMemberInfo(Member member, SignupRequestDto requestDto)
 		throws Exception {
-		checkNicknamePattern(requestDto.getNickname()); //닉네임 유효성 검사
-		if (memberRepository.existsByNickname(requestDto.getNickname())) { //닉네임 중복검사
-			throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
-		}
 
 		Member updateUser = memberRepository.findById(member.getId())
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND)); //로그인한 유저 정보
+
+		if (requestDto.getNickname() != null) { //닉네임을 요청 받았을때만
+			checkNicknamePattern(requestDto.getNickname()); //닉네임 유효성 검사
+			if (memberRepository.existsByNickname(requestDto.getNickname())) { //닉네임 중복검사
+				throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
+			}
+			updateUser.updateNickname(requestDto.getNickname());
+		}
+
 
 		String profileImg = s3Service.getSavedS3ImageUrl(requestDto.getProfileImage());
-
-		updateUser.updateMemberInfo(requestDto.getNickname(), requestDto.getClassName(),
-			profileImg);
+		updateUser.updateProfileImg(profileImg);
+		updateUser.updateClassName(requestDto.getClassName());
 		memberRepository.save(updateUser);
 
 		return memberResponseBuilder(updateUser);
@@ -227,26 +229,26 @@ public class MemberService {
 		List<Squad> squadList = squadRepository.findAllByMember(member);
 		List<CompletedQuestDto> completedQuestDtoList = new ArrayList<>();
 
-		for(Squad squad:squadList){
-			if(squad.getQuest().getIsComplete()){
+		for (Squad squad : squadList) {
+			if (squad.getQuest().getIsComplete()) {
 				completedQuestDtoList.add(CompletedQuestDto.builder()
 					.questId(squad.getId())
 					.questTitle(squad.getQuest().getTitle())
 					.build());
-			};
+			}
+			;
 		}
 
-		if(token != null){
+		if (token != null) {
 			String username = jwtDecoder.decodeUsername(token.substring(7));
 			Member me = memberRepository.findByEmail(username).orElseThrow(
 				() -> new CustomException(ErrorCode.INVALID_AUTH_TOKEN));
 
-			return myPageResponseBuilder(member,folio,completedQuestDtoList,true,
-				followRepository.existsByFollowingAndMe(member,me));
+			return myPageResponseBuilder(member, folio, completedQuestDtoList, true,
+				followRepository.existsByFollowingAndMe(member, me));
 		}  // 로그인 상태확인
 
-
-		return myPageResponseBuilder(member,folio,completedQuestDtoList,false,false);
+		return myPageResponseBuilder(member, folio, completedQuestDtoList, false, false);
 
 	}
 

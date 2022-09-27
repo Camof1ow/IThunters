@@ -86,13 +86,19 @@ public class Member extends Timestamped {
 //		this.phoneNumber = phoneNum;
 //	}
 
-	public void updateMemberInfo(String nickname, String className,String profileImg){
+	public void updateNickname(String nickname){
 		this.nickname = nickname;
-		this.className = className;
-		this.profileImg = profileImg;
-
-
 	}
+
+	public void updateClassName(String className){
+		this.className = className;
+	}
+
+	public void updateProfileImg(String profileImg){
+		this.profileImg = profileImg;
+	}
+
+
 
 	public void updateStack(List<StackOfMember> stackOfMemberList) {
 		this.stackOfMemberList = stackOfMemberList;
