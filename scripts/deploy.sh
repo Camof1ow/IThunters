@@ -20,10 +20,12 @@ echo  ">>>>>> Set : $CURRENT_PROFILE" >> $DEPLOY_LOG_PATH
 
 if [ ${CURRENT_PROFILE} == 1 ]
 then
+  kill -9 $(lsof -t -i:8082)
   PROFILE_SET="set2"
   IDLE_PORT=8082
 elif [ ${CURRENT_PROFILE}  == 2 ]
 then
+  kill -9 $(lsof -t -i:8081)
   PROFILE_SET="set1"
   IDLE_PORT=8081
 else
