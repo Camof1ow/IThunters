@@ -6,11 +6,8 @@ import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.MemberInChannel;
 import com.example.itmonster.domain.Message;
 import com.example.itmonster.domain.Quest;
-import com.example.itmonster.domain.Squad;
 import com.example.itmonster.repository.ChannelRepository;
 import com.example.itmonster.repository.MemberInChannelRepository;
-import com.example.itmonster.repository.QuestRepository;
-import com.example.itmonster.repository.SquadRepository;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.socket.MessageRepository;
 import com.example.itmonster.socket.MessageResponseDto;
@@ -51,18 +48,20 @@ public class ChannelService {
 
         HashOperations<String, String, List<MessageResponseDto>> opsHashChatMessage = redisTemplate.opsForHash();
         List<ChannelResponseDto> result = new ArrayList<>();
-        for(MemberInChannel memberInChannel : memberInChannels){
+        for (MemberInChannel memberInChannel : memberInChannels) {
             String lastMessage = "";
             List<MessageResponseDto> temp1 = (opsHashChatMessage.get(MESSAGE,
                 String.valueOf(memberInChannel.getChannel().getId())));
 
-            if(temp1 != null){
-                temp1 = temp1.stream().sorted(Comparator.comparing(MessageResponseDto::getCreatedAt, Comparator.reverseOrder()))
+            if (temp1 != null) {
+                temp1 = temp1.stream().sorted(Comparator.comparing(MessageResponseDto::getCreatedAt,
+                        Comparator.reverseOrder()))
                     .collect(Collectors.toList());
                 lastMessage = temp1.get(0).getContent();
-            }else{
-                Message message = messageRepository.findTopByChannelIdOrderByCreatedAtDesc(memberInChannel.getChannel().getId());
-                if(message != null){
+            } else {
+                Message message = messageRepository.findTopByChannelIdOrderByCreatedAtDesc(
+                    memberInChannel.getChannel().getId());
+                if (message != null) {
                     lastMessage = message.getContent();
                 }
             }
@@ -70,6 +69,7 @@ public class ChannelService {
                 .id(memberInChannel.getChannel().getId())
                 .channelName(memberInChannel.getChannel().getChannelName())
                 .lastMessage(lastMessage)
+                .imgUrl(memberInChannel.getChannel().getQuest().getMember().getProfileImg())
                 .build());
         }
         return result;
