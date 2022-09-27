@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Builder
@@ -32,6 +34,7 @@ public class Folio { // 회원가입 할때
 //    private Long career;
 
     @OneToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     public void updateFolio(String title, String notion, String github , String blog){

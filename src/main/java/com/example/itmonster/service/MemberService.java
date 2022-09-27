@@ -236,7 +236,6 @@ public class MemberService {
 					.questTitle(squad.getQuest().getTitle())
 					.build());
 			}
-			;
 		}
 
 		if (token != null) {
@@ -385,6 +384,8 @@ public class MemberService {
 
 		return MyPageResponseDto.builder()
 			.memberId(member.getId())
+			.nickname(member.getNickname())
+			.className(member.getClassName())
 			.profileUrl(member.getProfileImg())
 			.stackList(getStackList(member))
 			.title(folio.getTitle())
