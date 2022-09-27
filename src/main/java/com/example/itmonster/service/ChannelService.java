@@ -1,11 +1,15 @@
 package com.example.itmonster.service;
 
 import com.example.itmonster.controller.response.ChannelResponseDto;
+import com.example.itmonster.controller.response.ChatSquadInfoDto;
+import com.example.itmonster.controller.response.SquadMemberDto;
 import com.example.itmonster.domain.Channel;
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.MemberInChannel;
 import com.example.itmonster.domain.Message;
 import com.example.itmonster.domain.Quest;
+import com.example.itmonster.exceptionHandler.CustomException;
+import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.ChannelRepository;
 import com.example.itmonster.repository.MemberInChannelRepository;
 import com.example.itmonster.security.UserDetailsImpl;
@@ -73,5 +77,20 @@ public class ChannelService {
                 .build());
         }
         return result;
+    }
+
+    @Transactional(readOnly = true)
+    public ChatSquadInfoDto readChatSquadInfo(Long channelId){
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
+        List<MemberInChannel> memberInChannels = memberInChannelRepository.findAllByChannel(channel);
+        List<SquadMemberDto> squadMemberDtos = memberInChannels.stream().map(MemberInChannel::getMember)
+            .map(SquadMemberDto::new).collect(Collectors.toList());
+
+        return ChatSquadInfoDto.builder()
+            .channelId(channelId)
+            .channelName(channel.getChannelName())
+            .squadMembers(squadMemberDtos)
+            .build();
     }
 }
