@@ -34,6 +34,7 @@ public class Folio { // 회원가입 할때
 //    private Long career;
 
     @OneToOne
+    @JoinColumn
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
