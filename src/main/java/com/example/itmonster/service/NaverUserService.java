@@ -149,7 +149,7 @@ public class NaverUserService {
         System.out.println(responseBody);
 
         String socialId = String.valueOf(jsonNode.get("response").get("id").asText());
-        String email = jsonNode.get("response").get("email").asText();
+        String email = "NAVER-" + jsonNode.get("response").get("email").asText();
         String nickname = jsonNode.get("response").get("nickname").asText();
 
         // 카카오에서 이미지 가져오기
@@ -171,7 +171,7 @@ public class NaverUserService {
             .orElse(null);
 
         if (naverUser == null) {  // 회원가입
-            String email = "NAVER-" + naverUserInfo.getEmail();
+            String email = naverUserInfo.getEmail();
             if (memberRepository.existsByEmail(email)) {
                 throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
             }
