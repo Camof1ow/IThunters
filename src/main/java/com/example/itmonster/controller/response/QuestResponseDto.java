@@ -11,6 +11,7 @@ import lombok.Getter;
 public class QuestResponseDto implements Serializable { // 댓글 조회, 기술스택 추가해야됨 !!
 
     private Long questId;
+    private Long memberId;
     private String title;
     private String nickname;
     private String profileImg;

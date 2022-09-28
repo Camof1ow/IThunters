@@ -218,6 +218,7 @@ public class QuestService {
         }
         return QuestResponseDto.builder()
             .questId(quest.getId())
+            .memberId(quest.getMember().getId())
             .title(quest.getTitle())
             .nickname(quest.getMember().getNickname())
             .content(quest.getContent())
