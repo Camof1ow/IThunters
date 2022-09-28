@@ -171,7 +171,7 @@ public class NaverUserService {
             .orElse(null);
 
         if (naverUser == null) {  // 회원가입
-            String email = naverUserInfo.getEmail();
+            String email = "NAVER-" + naverUserInfo.getEmail();
             if (memberRepository.existsByEmail(email)) {
                 throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
             }
