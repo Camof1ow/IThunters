@@ -63,7 +63,7 @@ public class SocialLoginController {
     @GetMapping("/oauth/google")
     public ResponseEntity<HttpHeaders> login ( @AuthenticationPrincipal OAuth2User oAuth2User , HttpServletResponse response ){
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("http://localhost:3000/auth?accessToken=" + googleOAuthService.login( oAuth2User,response )));
+        headers.setLocation(URI.create("https://it-monsters.co.kr/auth?accessToken=" + googleOAuthService.login( oAuth2User,response )));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }
 
