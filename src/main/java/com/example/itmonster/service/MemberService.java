@@ -119,8 +119,11 @@ public class MemberService {
 		}
 
 
-		String profileImg = s3Service.getSavedS3ImageUrl(requestDto.getProfileImage());
-		updateUser.updateProfileImg(profileImg);
+		if(requestDto.getProfileImage() != null){
+			String profileImg = s3Service.getSavedS3ImageUrl(requestDto.getProfileImage());
+			updateUser.updateProfileImg(profileImg);
+		}
+
 		updateUser.updateClassName(requestDto.getClassName());
 		memberRepository.save(updateUser);
 
