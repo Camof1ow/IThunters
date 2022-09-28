@@ -179,9 +179,11 @@ public class KakaoUserService {
 
 		// null값 오면 회원가입 가능 기존 사용자가 없다는 뜻
 		if (kakaoUser == null) {  // 회원가입
-			String email = kakaoUserInfo.getEmail();
-			if (memberRepository.existsByEmail(email)) {
-				throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+			String email = "";
+			if (memberRepository.existsByEmail(kakaoUserInfo.getEmail())) {
+				email += "KAKAO-"+kakaoUserInfo.getEmail();
+			}else {
+				email += kakaoUserInfo.getEmail();
 			}
 
 			String nickname = kakaoUserInfo.getNickname();
