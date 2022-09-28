@@ -18,6 +18,8 @@ public class SubCommentResponseDto {
     @JsonIgnore
     private Long commentId;
 
+    private Long memberId;
+
     private Long subCommentId;
 
     private String nickname;

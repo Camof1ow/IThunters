@@ -16,77 +16,78 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class SubCommentService {
 
-    private final SubCommentRepository subCommentRepository;
+	private final SubCommentRepository subCommentRepository;
 
-    private final CommentRepository commentRepository;
+	private final CommentRepository commentRepository;
 
-    @Transactional
-    public ResponseEntity<SubCommentResponseDto> createSubComment(SubCommentRequestDto subCommentRequestDto, Long commentId, UserDetailsImpl userDetails) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+	@Transactional
+	public ResponseEntity<SubCommentResponseDto> createSubComment(
+		SubCommentRequestDto subCommentRequestDto, Long commentId, UserDetailsImpl userDetails) {
+		Comment comment = commentRepository.findById(commentId)
+			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 
-        Member member = userDetails.getMember();
+		Member member = userDetails.getMember();
 
-        SubComment subComment = SubComment.builder()
-                .content(subCommentRequestDto.getContent())
-                .comment(comment)
-                .member(member)
-                .build();
-        subCommentRepository.save(subComment);
+		SubComment subComment = SubComment.builder()
+			.content(subCommentRequestDto.getContent())
+			.comment(comment)
+			.member(member)
+			.build();
+		subCommentRepository.save(subComment);
 
-        SubCommentResponseDto subCommentResponseDto = SubCommentResponseDto.builder()
-                .commentId(subComment.getId())
-                .subCommentId(subComment.getId())
-                .nickname(member.getNickname())
-                .content(subComment.getContent())
-                .createdAt(subComment.getCreatedAt())
-                .modifiedAt(subComment.getModifiedAt())
-                .profileImage(member.getProfileImg())
-                .build();
+		SubCommentResponseDto subCommentResponseDto = SubCommentResponseDto.builder()
+			.commentId(subComment.getId())
+			.memberId(subComment.getMember().getId())
+			.subCommentId(subComment.getId())
+			.nickname(member.getNickname())
+			.content(subComment.getContent())
+			.createdAt(subComment.getCreatedAt())
+			.modifiedAt(subComment.getModifiedAt())
+			.profileImage(member.getProfileImg())
+			.build();
 
-        return new ResponseEntity<>(subCommentResponseDto, HttpStatus.OK);
-    }
+		return new ResponseEntity<>(subCommentResponseDto, HttpStatus.OK);
+	}
 
-    @Transactional
-    public ResponseEntity<SubCommentResponseDto> getSubComments(Long subCommentId) {
-        SubComment subComment = subCommentRepository.findById(subCommentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-        SubCommentResponseDto subCommentResponseDto = SubCommentResponseDto.builder()
-                .subCommentId(subComment.getId())
-                .content(subComment.getContent())
-                .nickname(subComment.getMember().getNickname())
-                .profileImage(subComment.getMember().getProfileImg())
-                .createdAt(subComment.getCreatedAt())
-                .modifiedAt(subComment.getModifiedAt())
-                .build();
+	@Transactional
+	public ResponseEntity<SubCommentResponseDto> getSubComments(Long subCommentId) {
+		SubComment subComment = subCommentRepository.findById(subCommentId)
+			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+		SubCommentResponseDto subCommentResponseDto = SubCommentResponseDto.builder()
+			.memberId(subComment.getMember().getId())
+			.subCommentId(subComment.getId())
+			.content(subComment.getContent())
+			.nickname(subComment.getMember().getNickname())
+			.profileImage(subComment.getMember().getProfileImg())
+			.createdAt(subComment.getCreatedAt())
+			.modifiedAt(subComment.getModifiedAt())
+			.build();
 
-        return new ResponseEntity<>(subCommentResponseDto, HttpStatus.OK);
-    }
+		return new ResponseEntity<>(subCommentResponseDto, HttpStatus.OK);
+	}
 
-    @Transactional
-    public ResponseEntity<String> updateSubComment(Long subCommentId, SubCommentRequestDto subCommentRequestDto) {
-        SubComment subComment = subCommentRepository.findById(subCommentId).orElseThrow(()
-                -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-        subComment.updateSubComment(subCommentRequestDto);
-        // 저장넣기
-        subCommentRepository.save(subComment);
-        return new ResponseEntity<>("수정이 완료되었습니다.", HttpStatus.OK);
-    }
+	@Transactional
+	public ResponseEntity<String> updateSubComment(Long subCommentId,
+		SubCommentRequestDto subCommentRequestDto) {
+		SubComment subComment = subCommentRepository.findById(subCommentId).orElseThrow(()
+			-> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+		subComment.updateSubComment(subCommentRequestDto);
+		// 저장넣기
+		subCommentRepository.save(subComment);
+		return new ResponseEntity<>("수정이 완료되었습니다.", HttpStatus.OK);
+	}
 
-    @Transactional
-    public ResponseEntity<String> deleteSubComment(Long subCommentId) {
-        SubComment subComment = subCommentRepository.findById(subCommentId).orElseThrow(()
-                -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-        subCommentRepository.deleteById(subCommentId);
-        return new ResponseEntity<>("삭제 완료되었습니다.", HttpStatus.OK);
-    }
+	@Transactional
+	public ResponseEntity<String> deleteSubComment(Long subCommentId) {
+		SubComment subComment = subCommentRepository.findById(subCommentId).orElseThrow(()
+			-> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+		subCommentRepository.deleteById(subCommentId);
+		return new ResponseEntity<>("삭제 완료되었습니다.", HttpStatus.OK);
+	}
 }
 
 

@@ -64,6 +64,7 @@ public class CommentService {
         List<SubCommentResponseDto> subCommentResponseDtoList = new ArrayList<>();
         for (SubComment subComment:subCommentList){
             subCommentResponseDtoList.add(SubCommentResponseDto.builder()
+                    .memberId(subComment.getMember().getId())
                     .subCommentId(subComment.getId())
                     .content(subComment.getContent())
                     .nickname(subComment.getMember().getNickname())
@@ -89,6 +90,7 @@ public class CommentService {
 
         for (Comment comment : comments) {
             commentResponseDtos.add(CommentResponseDto.builder()
+                    .memberId(comment.getMember().getId())
                     .commentId(comment.getId())
                     .nickname(comment.getMember().getNickname())
                     .content(comment.getContent())

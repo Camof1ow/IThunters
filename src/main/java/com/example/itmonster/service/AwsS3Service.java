@@ -30,14 +30,12 @@ public class AwsS3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    String defaultImg = "https://buckitforimg.s3.ap-northeast-2.amazonaws.com/default_profile.png"; // 기본이미지
-
-
     @Transactional
     public String getSavedS3ImageUrl(String stringImage) throws CustomException, IOException {
-
+        int num = 0;
         if (stringImage == null) {
-            return defaultImg; // 사진 미등록시 기본 프로필로 등록
+            num = (int)(Math.random()*4)+1;
+            return "https://buckitforimg.s3.ap-northeast-2.amazonaws.com/default0"+num+".png"; // 사진 미등록시 기본 프로필로 등록
         }
 
         String fileName = UUID.randomUUID().toString();
