@@ -199,6 +199,7 @@ public class NaverUserService {
                 .profileImg(profileImage)
                 .role(RoleEnum.USER)
                 .phoneNumber(dummyNumber+random)
+                .className("")
                 .socialId(socialId).build();
             memberRepository.save(naverUser);
 
