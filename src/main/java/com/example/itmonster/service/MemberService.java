@@ -397,7 +397,6 @@ public class MemberService {
 			.loginStatus(login)
 			.build();
 	}
-
 }
 
 //로그인 후 관리자 권한 얻을 수 있는 API 관리자 접근 가능 페이지 없슴
