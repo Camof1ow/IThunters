@@ -34,7 +34,7 @@ public class GoogleOAuthService {
         }
         // TODO: 1. 회원이 아니라면 회원 가입을 시켜준다.
 
-        String email = oAuth2User.getAttribute("email") ;
+        String email = "Google-" + oAuth2User.getAttribute("email") ;
         String name =  oAuth2User.getAttribute("name") ;
         String imgUrl = oAuth2User.getAttribute("picture");
         String password = passwordEncoder.encode( UUID.randomUUID().toString() );
