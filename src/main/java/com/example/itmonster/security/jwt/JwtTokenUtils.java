@@ -43,7 +43,7 @@ public final class JwtTokenUtils {
     }
 
     public static String generateJwtTokenByOAuth2( OAuth2User oAuth2User ) {
-        String email = oAuth2User.getAttribute("email") ;
+        String email = "Google-" +oAuth2User.getAttribute("email") ;
         String token = null;
         try {
             token = JWT.create()
