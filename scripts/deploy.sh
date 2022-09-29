@@ -36,7 +36,8 @@ cd /home/ubuntu/itmonster/deploy/
 chmod +x ITsquad-0.0.1-SNAPSHOT.jar
 # shellcheck disable=SC2046
 nohup java -jar -Duser.timezone=Asia/Seoul /home/ubuntu/itmonster/deploy/ITsquad-0.0.1-SNAPSHOT.jar --spring.config.location=./${PROFILE_SET}.properties --server.port=${IDLE_PORT} >> $APPLICATION_LOG_PATH/application$IDLE_PORT.log 2>&1 $DEPLOY_ERR_LOG_PATH &
-
+#nohup java -jar -Duser.timezone=Asia/Seoul /home/ubuntu/itmonster/deploy/ITsquad-0.0.1-SNAPSHOT.jar --spring.config.location=./set2.properties --server.port=8082&
+#nohup java -jar -Duser.timezone=Asia/Seoul /home/ubuntu/itmonster/deploy/ITsquad-0.0.1-SNAPSHOT.jar --spring.config.location=./set1.properties --server.port=8081&
 sleep 60s
 
 echo "> 배포 종료 : $(date +%c)" >> $DEPLOY_LOG_PATH

@@ -109,8 +109,8 @@ public class MemberService {
 
 		Member updateUser = memberRepository.findById(member.getId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND)); //로그인한 유저 정보
-
-		if (requestDto.getNickname() != null) { //닉네임을 요청 받았을때만
+		if(Objects.equals(requestDto.getNickname(), updateUser.getNickname())){}
+		else if (requestDto.getNickname() != null) { //닉네임을 요청 받았을때만
 			checkNicknamePattern(requestDto.getNickname()); //닉네임 유효성 검사
 			if (memberRepository.existsByNickname(requestDto.getNickname())) { //닉네임 중복검사
 				throw new CustomException(ErrorCode.DUPLICATE_NICKNAME);
