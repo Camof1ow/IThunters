@@ -29,7 +29,7 @@ public class SearchPredicate {
     // 제목 필터
     private static BooleanExpression containsTitle(List<String> title){
         return title != null ?
-            quest.title.contains( title.get(0) ) : null;
+            quest.title.contains( title.get( title.size() - 1 ) ) : null;
     }
 
     // 내용 필터
