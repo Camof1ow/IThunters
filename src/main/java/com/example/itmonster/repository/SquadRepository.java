@@ -15,4 +15,6 @@ public interface SquadRepository extends JpaRepository<Squad, Long> {
     List<Squad> findAllByMember(Member me);
 
     Optional<Squad> findAllByMemberAndQuest(Member member, Quest quest);
+
+    void deleteByMemberAndQuest(Member member, Quest quest);
 }

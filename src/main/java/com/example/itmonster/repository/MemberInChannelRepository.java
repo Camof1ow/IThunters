@@ -9,5 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface MemberInChannelRepository extends JpaRepository<MemberInChannel, Long> {
     List<MemberInChannel> findAllByMember(Member member);
     List<MemberInChannel> findAllByChannel(Channel channel);
+    void deleteByMemberAndChannel(Member member, Channel channel);
 
 }

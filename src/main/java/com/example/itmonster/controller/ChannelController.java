@@ -30,4 +30,9 @@ public class ChannelController {
     public ChatSquadInfoDto readChatSquadInfo(@PathVariable Long channelId){
         return channelService.readChatSquadInfo(channelId);
     }
+
+    @PostMapping("/{channelId}")
+    public void quitChannel(@PathVariable Long channelId, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        channelService.quitChannel(channelId, userDetails);
+    }
 }
