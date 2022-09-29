@@ -34,12 +34,15 @@ public class GoogleOAuthService {
         }
         // TODO: 1. 회원이 아니라면 회원 가입을 시켜준다.
 
-        String email = "GOOGLE-" + oAuth2User.getAttribute("email") ;
+        String email = "Google-" + oAuth2User.getAttribute("email") ;
         String name =  oAuth2User.getAttribute("name") ;
         String imgUrl = oAuth2User.getAttribute("picture");
+        String socialId = oAuth2User.getAttribute("sub");
         String password = passwordEncoder.encode( UUID.randomUUID().toString() );
 
-        if( !memberRepository.existsByEmail( email ) ){
+        Member googleMember = memberRepository.findBySocialId( socialId ).orElse(null);
+
+        if( googleMember == null ){
             StringBuilder nickname = new StringBuilder( name );
             if (memberRepository.existsByNickname(nickname.toString())) {
                 Random rnd = new Random();
@@ -61,6 +64,7 @@ public class GoogleOAuthService {
                 .phoneNumber(dummyNumber+random)
                 .profileImg( imgUrl )
                 .className("")
+                .socialId( socialId )
                 .build();
             memberRepository.save(member);
 
