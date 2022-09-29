@@ -1,6 +1,13 @@
 package com.example.itmonster.controller;
 
 import com.example.itmonster.controller.response.SquadResponseDto;
+import com.example.itmonster.domain.Channel;
+import com.example.itmonster.domain.Offer;
+import com.example.itmonster.domain.Quest;
+import com.example.itmonster.exceptionHandler.CustomException;
+import com.example.itmonster.exceptionHandler.ErrorCode;
+import com.example.itmonster.repository.ChannelRepository;
+import com.example.itmonster.repository.OfferRepository;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.service.SquadService;
 import java.util.List;
@@ -20,12 +27,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class SquadController {
 
     private final SquadService squadService;
+    private final OfferRepository offerRepository;
+    private final ChannelRepository channelRepository;
 
     // 스쿼드에 멤버 추가
     @PostMapping("/squads/{offerId}")
     public ResponseEntity<Boolean> addSquadMember(@PathVariable Long offerId,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(squadService.addSquadMember(offerId, userDetails.getMember()));
+        Offer offer = offerRepository.findById(offerId).orElseThrow(
+            () -> new CustomException(ErrorCode.OFFER_NOT_FOUND));
+        Quest quest = offer.getQuest();
+        Long channelId = channelRepository.getChannelByQuest(quest).getId();
+
+        return ResponseEntity.ok(squadService.addSquadMember(offer, quest, channelId, userDetails.getMember()));
     }
 
     // 퀘스트에 합류된 스쿼드 멤버들 리스트 불러오기

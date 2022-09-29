@@ -1,10 +1,11 @@
 package com.example.itmonster.controller.response;
 
 import com.example.itmonster.domain.Member;
+import java.io.Serializable;
 import lombok.Getter;
 
 @Getter
-public class SquadMemberDto {
+public class SquadMemberDto implements Serializable {
     private final Long memberId;
     private final String nickname;
     private final String profileImg;
