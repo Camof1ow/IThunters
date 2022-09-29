@@ -21,6 +21,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -82,6 +84,7 @@ public class ChannelService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "chatSquadInfo", key = "#channelId")
     public ChatSquadInfoDto readChatSquadInfo(Long channelId){
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
@@ -97,6 +100,7 @@ public class ChannelService {
     }
 
     @Transactional
+    @CacheEvict(value = "chatSquadInfo", key = "#channelId")
     public void quitChannel(Long channelId, UserDetailsImpl userDetails){
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));

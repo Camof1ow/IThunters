@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,17 +35,17 @@ public class SquadService {
 
     // 스쿼드에 멤버 추가
     @Transactional
-    public boolean addSquadMember(Long offerId, Member member) {
+    @CacheEvict(value = "chatSquadInfo", key = "#channelId")
+    public boolean addSquadMember(Offer offer, Quest quest, Long channelId, Member member) {
 
-        Offer offer = offerRepository.findById(offerId).orElseThrow(
-            () -> new CustomException(ErrorCode.OFFER_NOT_FOUND)  // 에러 : 오퍼가 존재하지 않음
-        );
         Member questOwner = offer.getQuest().getMember();
         if (!Objects.equals(questOwner.getId(), member.getId())) {
             throw new CustomException(ErrorCode.INVALID_AUTHORITY);   // 에러 : 게시글 주인이 아닌 사람이 접근할 경우.
         }
 
-        Quest quest = offer.getQuest();
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
+
         Member offeredMember = offer.getOfferedMember();
         ClassType classType = offer.getClassType();
 
@@ -58,8 +59,7 @@ public class SquadService {
             Squad.builder()
                 .quest(quest)
                 .member(offeredMember)
-                .build()
-        );
+                .build());
 
         // Offer DB 에서 삭제
         offerRepository.delete(offer);
@@ -80,8 +80,6 @@ public class SquadService {
 
         questRepository.save(quest);
         quest.updateStatus(quest);
-
-        Channel channel = channelRepository.getChannelByQuest(quest);
 
         memberInChannelRepository.save(MemberInChannel.builder()  // 대화방에 해당 유저 추가
             .channel(channel)
