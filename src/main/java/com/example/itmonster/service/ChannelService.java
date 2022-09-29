@@ -12,6 +12,7 @@ import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.ChannelRepository;
 import com.example.itmonster.repository.MemberInChannelRepository;
+import com.example.itmonster.repository.SquadRepository;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.socket.MessageRepository;
 import com.example.itmonster.socket.MessageResponseDto;
@@ -34,6 +35,7 @@ public class ChannelService {
     private final RedisTemplate<String, Object> redisTemplate;
     private static final String MESSAGE = "MESSAGE";
     private final MessageRepository messageRepository;
+    private final SquadRepository squadRepository;
 
     @Transactional
     public Channel createChannel(Quest quest) {
@@ -92,5 +94,17 @@ public class ChannelService {
             .channelName(channel.getChannelName())
             .squadMembers(squadMemberDtos)
             .build();
+    }
+
+    @Transactional
+    public void quitChannel(Long channelId, UserDetailsImpl userDetails){
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
+        Member member = userDetails.getMember();
+        memberInChannelRepository.deleteByMemberAndChannel(member, channel);
+
+        Quest quest = channel.getQuest();
+
+        squadRepository.deleteByMemberAndQuest(member, quest);
     }
 }
