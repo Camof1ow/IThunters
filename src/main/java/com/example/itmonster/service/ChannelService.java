@@ -96,6 +96,7 @@ public class ChannelService {
             .channelId(channelId)
             .channelName(channel.getChannelName())
             .squadMembers(squadMemberDtos)
+            .leader( channel.getQuest().getMember() )
             .build();
     }
 
