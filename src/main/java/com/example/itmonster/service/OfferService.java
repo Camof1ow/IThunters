@@ -8,6 +8,7 @@ import com.example.itmonster.domain.Quest;
 import com.example.itmonster.domain.Squad;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
+import com.example.itmonster.notification.NotificationService;
 import com.example.itmonster.repository.OfferRepository;
 import com.example.itmonster.repository.QuestRepository;
 import com.example.itmonster.repository.SquadRepository;
@@ -27,6 +28,7 @@ public class OfferService {
     private final OfferRepository offerRepository;
     private final QuestRepository questRepository;
     private final SquadRepository squadRepository;
+    private final NotificationService notificationService;
 
     // 합류 요청 생성
     @Transactional
@@ -61,6 +63,9 @@ public class OfferService {
                 .quest( quest )
                 .build()
         );
+
+        notificationService.notifyNewOfferEvent(questId);
+
         return true;
     }
 
@@ -82,10 +87,11 @@ public class OfferService {
     @Transactional
     public Boolean deleteOffer(Long offerId, UserDetailsImpl userDetails) {
 
-
         Offer offer = offerRepository.findById( offerId ).orElseThrow(
             () -> new CustomException( ErrorCode.OFFER_NOT_FOUND )
         );
+
+        notificationService.declineOfferEvent(offerId);
 
         offerRepository.delete( offer );
 
