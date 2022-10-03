@@ -10,6 +10,7 @@ import com.example.itmonster.domain.Quest;
 import com.example.itmonster.domain.Squad;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
+import com.example.itmonster.notification.NotificationService;
 import com.example.itmonster.repository.ChannelRepository;
 import com.example.itmonster.repository.MemberInChannelRepository;
 import com.example.itmonster.repository.OfferRepository;
@@ -32,6 +33,7 @@ public class SquadService {
     private final SquadRepository squadRepository;
     private final MemberInChannelRepository memberInChannelRepository;
     private final ChannelRepository channelRepository;
+    private final NotificationService notificationService;
 
     // 스쿼드에 멤버 추가
     @Transactional
@@ -60,6 +62,8 @@ public class SquadService {
                 .quest(quest)
                 .member(offeredMember)
                 .build());
+
+        notificationService.acceptOfferEvent(offer.getId());
 
         // Offer DB 에서 삭제
         offerRepository.delete(offer);
