@@ -12,6 +12,7 @@ import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.ChannelRepository;
 import com.example.itmonster.repository.MemberInChannelRepository;
+import com.example.itmonster.repository.MemberRepository;
 import com.example.itmonster.repository.SquadRepository;
 import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.socket.MessageRepository;
@@ -38,6 +39,7 @@ public class ChannelService {
     private static final String MESSAGE = "MESSAGE";
     private final MessageRepository messageRepository;
     private final SquadRepository squadRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     public Channel createChannel(Quest quest) {
@@ -108,6 +110,25 @@ public class ChannelService {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
         Member member = userDetails.getMember();
+        memberInChannelRepository.deleteByMemberAndChannel(member, channel);
+
+        Quest quest = channel.getQuest();
+
+        squadRepository.deleteByMemberAndQuest(member, quest);
+    }
+
+    @Transactional
+    @CacheEvict(value = "chatSquadInfo", key = "#channelId")
+    public void kickFromChannel(Long channelId, Long memberId, UserDetailsImpl userDetails){
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
+        Long leaderId = channel.getQuest().getMember().getId();
+        if(!userDetails.getMember().getId().equals(leaderId)){
+            throw new CustomException(ErrorCode.INVALID_AUTHORITY);
+        }
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
         memberInChannelRepository.deleteByMemberAndChannel(member, channel);
 
         Quest quest = channel.getQuest();
