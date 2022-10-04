@@ -63,7 +63,10 @@ public class MessageService {
 
         redisToRdsTest(String.valueOf(channelId));
 
-        return messageRepository.findAllByChannelIdOrderByIdDesc(channelId)
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
+
+        return messageRepository.findTop100ByChannelIdOrderByCreatedAtDesc(channelId)
             .stream().map(MessageResponseDto::new).collect(Collectors.toList());
     }
 
@@ -136,7 +139,7 @@ public class MessageService {
             messageResponseDtos.sort(Comparator.comparing(MessageResponseDto::getCreatedAt));
 
             Long senderId;
-            for(MessageResponseDto messageResponseDto : messageResponseDtos){
+            for (MessageResponseDto messageResponseDto : messageResponseDtos) {
                 senderId = messageResponseDto.getMemberId();
                 Member sender = memberRepository.findById(senderId)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
