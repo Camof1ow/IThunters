@@ -8,6 +8,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -23,7 +24,7 @@ public class MessageController {
         return messageService.readMessages(channelId);
     }
 
-    @GetMapping("/api/channels/{channelId}/test")
+    @PostMapping("/api/channels/{channelId}/test")
     public List<MessageResponseDto> readMessagesTest(@PathVariable Long channelId) {
         return messageService.readMessagesTest(channelId);
     }
