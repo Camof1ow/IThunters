@@ -12,6 +12,7 @@ import com.example.itmonster.security.jwt.JwtDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -55,6 +56,15 @@ public class MessageService {
         messageResponseDtos.addAll(temp2);       // RDS db에 저장된 메시지 최신순 100개
         messageResponseDtos.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
         return messageResponseDtos;
+    }
+
+    @Transactional
+    public List<MessageResponseDto> readMessagesTest(Long channelId) {   // 메시지 불러오기
+
+        redisToRdsTest(String.valueOf(channelId));
+
+        return messageRepository.findAllByChannelIdOrderByIdDesc(channelId)
+            .stream().map(MessageResponseDto::new).collect(Collectors.toList());
     }
 
     @Transactional
@@ -123,7 +133,7 @@ public class MessageService {
             .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
 
         if (messageResponseDtos != null) {
-            messageResponseDtos.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
+            messageResponseDtos.sort(Comparator.comparing(MessageResponseDto::getCreatedAt));
 
             Long senderId;
             for(MessageResponseDto messageResponseDto : messageResponseDtos){
