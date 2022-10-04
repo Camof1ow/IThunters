@@ -35,4 +35,9 @@ public class ChannelController {
     public void quitChannel(@PathVariable Long channelId, @AuthenticationPrincipal UserDetailsImpl userDetails){
         channelService.quitChannel(channelId, userDetails);
     }
+
+    @PostMapping("/deleteCache")
+    public void deleteCacheTest(){
+        channelService.deleteChatSquadInfoCache();
+    }
 }
