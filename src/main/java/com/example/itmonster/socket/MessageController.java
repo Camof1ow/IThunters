@@ -23,6 +23,11 @@ public class MessageController {
         return messageService.readMessages(channelId);
     }
 
+    @GetMapping("/api/channels/{channelId}/test")
+    public List<MessageResponseDto> readMessagesTest(@PathVariable Long channelId) {
+        return messageService.readMessagesTest(channelId);
+    }
+
     @MessageMapping(value = {"/channels/{channelId}"})
     public void addMessage(@RequestBody MessageRequestDto messageRequestDto,
         @DestinationVariable Long channelId,

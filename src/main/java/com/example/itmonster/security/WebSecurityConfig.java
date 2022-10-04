@@ -170,6 +170,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         // 웹소켓 접속
         skipPathList.add("GET,/socket/**");
+        // SSE 접속
+        skipPathList.add("GET,/sub");
         //마이페이지 로그인 확인 없이 요청가능
         skipPathList.add("GET,/api/myPage/*");
 
