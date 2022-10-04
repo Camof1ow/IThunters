@@ -19,6 +19,9 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -60,25 +63,32 @@ public class MessageService {
     }
 
     @Transactional
-    public List<MessageResponseDto> readMessagesTest(Long channelId, Long cursor, Pageable pageable) {   // 메시지 불러오기
+    public Page<MessageResponseDto> readMessagesTest(Long channelId,
+        Pageable pageable) {   // 메시지 불러오기
 
         redisToRdsTest(String.valueOf(channelId));
-        return readMessagesByChannel(channelId, cursor, pageable)
-            .stream().map(MessageResponseDto::new).collect(Collectors.toList());
+
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
+
+        Page<Message> messages = messageRepository.findAllByChannelOrderByIdDesc(channel, pageable);
+
+        return new PageImpl<>(
+            messages.stream().map(MessageResponseDto::new).collect(Collectors.toList()),
+            pageable, messages.getTotalElements());
 //
 //        Channel channel = channelRepository.findById(channelId)
 //            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
 //        return messageRepository.findAllByChannelOrderByIdDesc(channel)
 //            .stream().map(MessageResponseDto::new).collect(Collectors.toList());
     }
-
-    private List<Message> readMessagesByChannel(Long channelId, Long cursor, Pageable pageable){
-        Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
-        return cursor.equals(0L)
-            ? messageRepository.findAllByChannelOrderByIdDesc(channel, pageable)
-            : messageRepository.findByIdLessThanAndChannelOrderByIdDesc(cursor, channel, pageable);
-    }
+//    private List<Message> readMessagesByChannel(Long channelId, Long cursor, Pageable pageable){
+//        Channel channel = channelRepository.findById(channelId)
+//            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
+//        return cursor.equals(0L)
+//            ? messageRepository.findAllByChannelOrderByIdDesc(channel, pageable)
+//            : messageRepository.findByIdLessThanAndChannelOrderByIdDesc(cursor, channel, pageable);
+//    }
 
     @Transactional
     public void sendMessage(MessageRequestDto messageRequestDto, Long channelId, String token) {
