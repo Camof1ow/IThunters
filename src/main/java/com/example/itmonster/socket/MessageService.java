@@ -83,7 +83,7 @@ public class MessageService {
 
         redisPublisher.publishSave(messageResponseDto);  // redis에 메시지를 저장
         redisToRds(String.valueOf(channelId));
-            // redis에 메시지가 100개 이상 저장되면 RDS DB에 저장하고 Redis 데이터 삭제
+        // redis에 메시지가 100개 이상 저장되면 RDS DB에 저장하고 Redis 데이터 삭제
     }
 
     private void redisToRds(String channelId) {
@@ -100,6 +100,33 @@ public class MessageService {
         if (messageResponseDtos != null && messageResponseDtos.size() >= 100) {
             Long senderId;
             for (MessageResponseDto messageResponseDto : messageResponseDtos) {
+                senderId = messageResponseDto.getMemberId();
+                Member sender = memberRepository.findById(senderId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+                messageRepository.save(Message.builder()
+                    .content(messageResponseDto.getContent())
+                    .member(sender)
+                    .channel(channel)
+                    .createdAt(messageResponseDto.getCreatedAt())
+                    .build());
+            }
+            opsHashChatMessage.delete(MESSAGE, channelId);
+        }
+    }
+
+    private void redisToRdsTest(String channelId) {
+        HashOperations<String, String, List<MessageResponseDto>> opsHashChatMessage = redisTemplate.opsForHash();
+
+        List<MessageResponseDto> messageResponseDtos = opsHashChatMessage.get(MESSAGE, channelId);
+
+        Channel channel = channelRepository.findById(Long.parseLong(channelId))
+            .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
+
+        if (messageResponseDtos != null) {
+            messageResponseDtos.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
+
+            Long senderId;
+            for(MessageResponseDto messageResponseDto : messageResponseDtos){
                 senderId = messageResponseDto.getMemberId();
                 Member sender = memberRepository.findById(senderId)
                     .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
