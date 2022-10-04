@@ -12,6 +12,7 @@ import com.example.itmonster.domain.Channel;
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.MemberInChannel;
 import com.example.itmonster.domain.Offer;
+import com.example.itmonster.domain.QQuest;
 import com.example.itmonster.domain.Quest;
 import com.example.itmonster.domain.Squad;
 import com.example.itmonster.domain.StackOfQuest;
@@ -25,6 +26,7 @@ import com.example.itmonster.repository.QuestRepository;
 import com.example.itmonster.repository.SquadRepository;
 import com.example.itmonster.repository.StackOfQuestRepository;
 import com.example.itmonster.security.UserDetailsImpl;
+import com.example.itmonster.socket.MessageResponseDto;
 import com.example.itmonster.utils.SearchPredicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
@@ -36,6 +38,9 @@ import javax.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -185,21 +190,34 @@ public class QuestService {
     }
 
     // 필터링된 검색결과 가져오기
+//    @Transactional(readOnly = true)
+//    public List<QuestResponseDto> searchQuests(MultiValueMap<String, String> allParameters ) {
+//
+//        JPAQueryFactory jpaQueryFactory = new JPAQueryFactory(em);
+//
+//        List<Quest> quests = SearchPredicate.filterSearch(allParameters, jpaQueryFactory);
+//
+//        List<QuestResponseDto> result = new ArrayList<>();
+//        for (Quest quest : quests) {
+//            result.add(toQuestResponseDto(quest));
+//        }
+//        return result;
+//    }
+
+    // 필터링된 검색결과 pageable 가져오기
     @Transactional(readOnly = true)
-    public List<QuestResponseDto> searchQuests(MultiValueMap<String, String> allParameters) {
+    public Page<QuestResponseDto> searchQuestsPage(MultiValueMap<String, String> allParameters, Pageable pageable ) {
 
         JPAQueryFactory jpaQueryFactory = new JPAQueryFactory(em);
 
-        List<Quest> quests = SearchPredicate.filterSearch(allParameters, jpaQueryFactory);
+        Page<Quest> quests = SearchPredicate.filterSearchPage(allParameters, jpaQueryFactory, pageable);
 
-        long totalCount = quests.size();
-
-        List<QuestResponseDto> result = new ArrayList<>();
-        for (Quest quest : quests) {
-            result.add(toQuestResponseDto(quest));
-        }
-        return result;
+        return new PageImpl<>(
+            quests.stream().map(this::toQuestResponseDto).collect(Collectors.toList()),
+            pageable, quests.getTotalElements());
     }
+
+
 
     private Quest validateQuest(Long questId) {
         return questRepository.findById(questId)

@@ -7,6 +7,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.util.MultiValueMap;
 
 
@@ -15,15 +18,52 @@ public class SearchPredicate {
     private static final QQuest quest = QQuest.quest;
     private static final QStackOfQuest stackOfQuest = QStackOfQuest.stackOfQuest;
 
-    public static List<Quest> filterSearch( MultiValueMap<String, String> allParameters , JPAQueryFactory jpaQueryFactory){
-        return jpaQueryFactory.selectFrom( QQuest.quest )
+//    public static List<Quest> filterSearch(
+//        MultiValueMap<String, String> allParameters , JPAQueryFactory jpaQueryFactory ){
+//
+//        Long count = getCount( allParameters , jpaQueryFactory );
+//
+//        return jpaQueryFactory.selectFrom( QQuest.quest )
+//            .where( containsTitle( allParameters.get("title" ) ),
+//                containsContent( allParameters.get("content") ),
+//                loeDuration( allParameters.get("duration") ),
+//                containsClass( allParameters.get("classType") ),
+//                inStacks( allParameters.get("stack")) )
+//            .orderBy( quest.createdAt.desc() )
+//            .fetch();
+//    }
+
+    // 검색결과 pageable로 구현
+    public static Page<Quest> filterSearchPage(
+        MultiValueMap<String, String> allParameters, JPAQueryFactory jpaQueryFactory, Pageable pageable){
+
+        List<Quest> quests = jpaQueryFactory.selectFrom( QQuest.quest )
             .where( containsTitle( allParameters.get("title" ) ),
                 containsContent( allParameters.get("content") ),
                 loeDuration( allParameters.get("duration") ),
                 containsClass( allParameters.get("classType") ),
                 inStacks( allParameters.get("stack")) )
-            .orderBy( quest.modifiedAt.desc() )
+            .orderBy( quest.createdAt.desc() )
+            .offset( pageable.getOffset() )
+            .limit( pageable.getPageSize() )
             .fetch();
+        Long count = getCount( allParameters , jpaQueryFactory );
+
+        return new PageImpl<>( quests , pageable , count );
+    }
+
+    public static Long getCount(MultiValueMap<String, String> allParameters,
+        JPAQueryFactory jpaQueryFactory){
+        Long count = jpaQueryFactory.select( QQuest.quest.count() )
+            .from( QQuest.quest )
+            .where( containsTitle( allParameters.get("title" ) ),
+                containsContent( allParameters.get("content") ),
+                loeDuration( allParameters.get("duration") ),
+                containsClass( allParameters.get("classType") ),
+                inStacks( allParameters.get("stack")) )
+            .fetchOne();
+
+        return count;
     }
 
     // 제목 필터

@@ -86,4 +86,5 @@ public class Quest extends Timestamped {
     public void completeQuest(){
         this.isComplete = true;
     }
+
 }
