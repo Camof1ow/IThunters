@@ -1,7 +1,6 @@
 package com.example.itmonster.controller;
 
 import com.example.itmonster.controller.response.SquadResponseDto;
-import com.example.itmonster.domain.Channel;
 import com.example.itmonster.domain.Offer;
 import com.example.itmonster.domain.Quest;
 import com.example.itmonster.exceptionHandler.CustomException;
@@ -62,5 +61,4 @@ public class SquadController {
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(squadService.deleteSquadMember(squadId, userDetails.getMember()));
     }
-
 }
