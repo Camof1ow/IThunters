@@ -2,6 +2,7 @@ package com.example.itmonster.controller;
 
 import com.example.itmonster.controller.request.QuestRequestDto;
 import com.example.itmonster.controller.response.MainQuestResponseDto;
+import com.example.itmonster.controller.response.QuestDetailResponseDto;
 import com.example.itmonster.controller.response.QuestResponseDto;
 import com.example.itmonster.controller.response.RecentQuestResponseDto;
 import com.example.itmonster.security.UserDetailsImpl;
@@ -50,7 +51,7 @@ public class QuestController {
     }
 
     @GetMapping("/{questId}")
-    public ResponseEntity<QuestResponseDto> readQuest(@PathVariable Long questId){
+    public ResponseEntity<QuestDetailResponseDto> readQuest(@PathVariable Long questId){
         return ResponseEntity.ok(questService.readQuest(questId));
     }
 

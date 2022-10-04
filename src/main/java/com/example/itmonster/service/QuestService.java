@@ -3,6 +3,7 @@ package com.example.itmonster.service;
 import com.example.itmonster.controller.request.QuestRequestDto;
 import com.example.itmonster.controller.response.ClassDto;
 import com.example.itmonster.controller.response.MainQuestResponseDto;
+import com.example.itmonster.controller.response.QuestDetailResponseDto;
 import com.example.itmonster.controller.response.QuestResponseDto;
 import com.example.itmonster.controller.response.RecentQuestResponseDto;
 import com.example.itmonster.controller.response.StackDto;
@@ -10,6 +11,7 @@ import com.example.itmonster.domain.Bookmark;
 import com.example.itmonster.domain.Channel;
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.MemberInChannel;
+import com.example.itmonster.domain.Offer;
 import com.example.itmonster.domain.Quest;
 import com.example.itmonster.domain.Squad;
 import com.example.itmonster.domain.StackOfQuest;
@@ -18,6 +20,7 @@ import com.example.itmonster.exceptionHandler.ErrorCode;
 import com.example.itmonster.repository.BookmarkRepository;
 import com.example.itmonster.repository.CommentRepository;
 import com.example.itmonster.repository.MemberInChannelRepository;
+import com.example.itmonster.repository.OfferRepository;
 import com.example.itmonster.repository.QuestRepository;
 import com.example.itmonster.repository.SquadRepository;
 import com.example.itmonster.repository.StackOfQuestRepository;
@@ -50,6 +53,7 @@ public class QuestService {
     private final StackOfQuestRepository stackOfQuestRepository;
     private final MemberInChannelRepository memberInChannelRepository;
     private final ChannelService channelService;
+    private final OfferRepository offerRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -122,9 +126,9 @@ public class QuestService {
     }
 
     @Transactional(readOnly = true) // 게시글 상세 조회 // 댓글조회, 기술스택 추가해야됨 !!
-    public QuestResponseDto readQuest(Long questId) {
+    public QuestDetailResponseDto readQuest(Long questId) {
         Quest quest = validateQuest(questId);
-        return toQuestResponseDto(quest);
+        return toQuestDetailsResponseDto( quest );
     }
 
     @Transactional // 게시글 수정 // 기술스택 추가해야됨 !!
@@ -235,6 +239,36 @@ public class QuestService {
             .build();
     }
 
+    private QuestDetailResponseDto toQuestDetailsResponseDto( Quest quest ) {
+        List<StackDto> stackDtos = quest.getStacks().stream().map(StackDto::new)
+            .collect(Collectors.toList());
+        List<String> temp = new ArrayList<>();
+        for (StackDto stackDto : stackDtos) {
+            temp.add(stackDto.getStackName());
+        }
+        List<Offer> offers = offerRepository.findAllByQuest( quest );
+        List<Long> offeredMembers = new ArrayList<>();
+        offers.forEach( offer -> offeredMembers.add ( offer.getOfferedMember().getId() ) );
+        return QuestDetailResponseDto.builder()
+            .questId(quest.getId())
+            .memberId(quest.getMember().getId())
+            .title(quest.getTitle())
+            .nickname(quest.getMember().getNickname())
+            .content(quest.getContent())
+            .duration(quest.getDuration())
+            .status(quest.getStatus())
+            .isComplete(quest.getIsComplete())
+            .profileImg(quest.getMember().getProfileImg())
+            .classes(new ClassDto(quest))
+            .bookmarkCnt(bookmarkRepository.countAllByQuest(quest))
+            .commentCnt(commentRepository.countAllByQuest(quest))
+            .createdAt(quest.getCreatedAt())
+            .modifiedAt(quest.getModifiedAt())
+            .stacks(temp)
+            .offeredMember( offeredMembers )
+            .build();
+    }
+
     // 0915 수정추가분
     private MainQuestResponseDto toMainQuestResponseDto(Quest quest) {
         List<StackDto> stackDtos = quest.getStacks().stream().map(StackDto::new)
@@ -255,7 +289,7 @@ public class QuestService {
             .classes(new ClassDto(quest))
             .bookmarkCnt(bookmarkRepository.countAllByQuest(quest))
             .commentCnt(commentRepository.countAllByQuest(quest))
-	.createdAt( quest.getCreatedAt() )
+	        .createdAt( quest.getCreatedAt() )
             .stacks(temp)
             .build();
     }
