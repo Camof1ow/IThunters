@@ -114,4 +114,8 @@ public class ChannelService {
 
         squadRepository.deleteByMemberAndQuest(member, quest);
     }
+
+    @CacheEvict(value = "chatSquadInfo", allEntries = true)
+    public void deleteChatSquadInfoCache(){
+    }
 }

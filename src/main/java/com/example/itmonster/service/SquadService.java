@@ -125,6 +125,7 @@ public class SquadService {
 
     // 스쿼드에서 멤버 삭제
     @Transactional
+    @CacheEvict(value = "chatSquadInfo", key = "#channelId")
     public boolean deleteSquadMember(Long squadId, Member member) {
 
         Squad squad = squadRepository.findById(squadId).orElseThrow(
