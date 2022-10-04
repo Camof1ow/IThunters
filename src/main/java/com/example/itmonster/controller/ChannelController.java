@@ -22,22 +22,30 @@ public class ChannelController {
     private final ChannelService channelService;
 
     @GetMapping("")
-    public List<ChannelResponseDto> readChannel(@AuthenticationPrincipal UserDetailsImpl userDetails){
+    public List<ChannelResponseDto> readChannel(
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return channelService.readChannel(userDetails);
     }
 
     @GetMapping("/{channelId}/squad")
-    public ChatSquadInfoDto readChatSquadInfo(@PathVariable Long channelId){
+    public ChatSquadInfoDto readChatSquadInfo(@PathVariable Long channelId) {
         return channelService.readChatSquadInfo(channelId);
     }
 
     @PostMapping("/{channelId}")
-    public void quitChannel(@PathVariable Long channelId, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    public void quitChannel(@PathVariable Long channelId,
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
         channelService.quitChannel(channelId, userDetails);
     }
 
+    @PostMapping("/{channelId}/{memberId}")
+    public void kickFromChannel(@PathVariable Long channelId, @PathVariable Long memberId,
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        channelService.kickFromChannel(channelId, memberId, userDetails);
+    }
+
     @PostMapping("/deleteCache")
-    public void deleteCacheTest(){
+    public void deleteCacheTest() {
         channelService.deleteChatSquadInfoCache();
     }
 }
