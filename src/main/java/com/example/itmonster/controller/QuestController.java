@@ -82,15 +82,15 @@ public class QuestController {
         return ResponseEntity.ok(questService.completeQuest(questId, userDetails));
     }
 
-//    @GetMapping("/search")
-//    public ResponseEntity<List<QuestResponseDto>> searchQuests(
-//        @RequestParam MultiValueMap<String, String> allParameters){
-//
-//        return ResponseEntity.ok( questService.searchQuests( allParameters ) );
-//    }
+    @GetMapping("/search")
+    public ResponseEntity<List<QuestResponseDto>> searchQuests(
+        @RequestParam MultiValueMap<String, String> allParameters){
+
+        return ResponseEntity.ok( questService.searchQuests( allParameters ) );
+    }
 
     // 검색 결과 pageable로 가져오기
-    @GetMapping("/search")
+    @GetMapping("/searches")
     public ResponseEntity<Page<QuestResponseDto>> searchQuestsPage(
         @RequestParam MultiValueMap<String, String> allParameters, Pageable pageable){
 
