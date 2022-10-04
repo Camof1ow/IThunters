@@ -16,4 +16,7 @@ public interface OfferRepository extends JpaRepository<Offer, Long> {
     List<Offer> findAllByQuestIn(List<Quest> quests);
 
     void deleteAllByQuestAndClassType(Quest quest, ClassType backend);
+
+    List<Offer> findAllByQuest(Quest quest);
+
 }
