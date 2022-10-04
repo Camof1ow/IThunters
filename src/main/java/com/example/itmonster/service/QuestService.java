@@ -190,19 +190,19 @@ public class QuestService {
     }
 
     // 필터링된 검색결과 가져오기
-//    @Transactional(readOnly = true)
-//    public List<QuestResponseDto> searchQuests(MultiValueMap<String, String> allParameters ) {
-//
-//        JPAQueryFactory jpaQueryFactory = new JPAQueryFactory(em);
-//
-//        List<Quest> quests = SearchPredicate.filterSearch(allParameters, jpaQueryFactory);
-//
-//        List<QuestResponseDto> result = new ArrayList<>();
-//        for (Quest quest : quests) {
-//            result.add(toQuestResponseDto(quest));
-//        }
-//        return result;
-//    }
+    @Transactional(readOnly = true)
+    public List<QuestResponseDto> searchQuests(MultiValueMap<String, String> allParameters ) {
+
+        JPAQueryFactory jpaQueryFactory = new JPAQueryFactory(em);
+
+        List<Quest> quests = SearchPredicate.filterSearch(allParameters, jpaQueryFactory);
+
+        List<QuestResponseDto> result = new ArrayList<>();
+        for (Quest quest : quests) {
+            result.add(toQuestResponseDto(quest));
+        }
+        return result;
+    }
 
     // 필터링된 검색결과 pageable 가져오기
     @Transactional(readOnly = true)

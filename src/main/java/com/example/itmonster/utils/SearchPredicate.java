@@ -18,20 +18,20 @@ public class SearchPredicate {
     private static final QQuest quest = QQuest.quest;
     private static final QStackOfQuest stackOfQuest = QStackOfQuest.stackOfQuest;
 
-//    public static List<Quest> filterSearch(
-//        MultiValueMap<String, String> allParameters , JPAQueryFactory jpaQueryFactory ){
-//
-//        Long count = getCount( allParameters , jpaQueryFactory );
-//
-//        return jpaQueryFactory.selectFrom( QQuest.quest )
-//            .where( containsTitle( allParameters.get("title" ) ),
-//                containsContent( allParameters.get("content") ),
-//                loeDuration( allParameters.get("duration") ),
-//                containsClass( allParameters.get("classType") ),
-//                inStacks( allParameters.get("stack")) )
-//            .orderBy( quest.createdAt.desc() )
-//            .fetch();
-//    }
+    public static List<Quest> filterSearch(
+        MultiValueMap<String, String> allParameters , JPAQueryFactory jpaQueryFactory ){
+
+        Long count = getCount( allParameters , jpaQueryFactory );
+
+        return jpaQueryFactory.selectFrom( QQuest.quest )
+            .where( containsTitle( allParameters.get("title" ) ),
+                containsContent( allParameters.get("content") ),
+                loeDuration( allParameters.get("duration") ),
+                containsClass( allParameters.get("classType") ),
+                inStacks( allParameters.get("stack")) )
+            .orderBy( quest.createdAt.desc() )
+            .fetch();
+    }
 
     // 검색결과 pageable로 구현
     public static Page<Quest> filterSearchPage(
