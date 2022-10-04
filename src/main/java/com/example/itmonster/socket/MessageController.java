@@ -2,7 +2,8 @@ package com.example.itmonster.socket;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class MessageController {
 
     private final MessageService messageService;
-    private static final int PAGE_DEFAULT_SIZE = 2;
 
     @ResponseBody
     @GetMapping("/api/channels/{channelId}")
@@ -28,8 +28,8 @@ public class MessageController {
 
     @ResponseBody
     @PostMapping("/api/channels/{channelId}/test")
-    public List<MessageResponseDto> readMessagesTest(@PathVariable Long channelId, Long cursor) {
-        return messageService.readMessagesTest(channelId, cursor, PageRequest.of(0, PAGE_DEFAULT_SIZE));
+    public Page<MessageResponseDto> readMessagesTest(@PathVariable Long channelId, Pageable pageable) {
+        return messageService.readMessagesTest(channelId, pageable);
     }
 
     @MessageMapping(value = {"/channels/{channelId}"})

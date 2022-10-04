@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +24,6 @@ public class SseController {
     private final JwtDecoder jwtDecoder;
     private final MemberRepository memberRepository;
 
-    @CrossOrigin
     @GetMapping(value = "/sub", consumes = MediaType.ALL_VALUE)
     public SseEmitter subscribe(@RequestParam String token){
 
