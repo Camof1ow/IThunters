@@ -12,5 +12,5 @@ public class ChatSquadInfoDto implements Serializable {
     private Long channelId;
     private String channelName;
     private List<SquadMemberDto> squadMembers;
-    private Member leader;
+    private Long leaderId;
 }

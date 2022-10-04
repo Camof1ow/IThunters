@@ -85,24 +85,26 @@ public class ChannelService {
 
     @Transactional(readOnly = true)
     @Cacheable(value = "chatSquadInfo", key = "#channelId")
-    public ChatSquadInfoDto readChatSquadInfo(Long channelId){
+    public ChatSquadInfoDto readChatSquadInfo(Long channelId) {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
-        List<MemberInChannel> memberInChannels = memberInChannelRepository.findAllByChannel(channel);
-        List<SquadMemberDto> squadMemberDtos = memberInChannels.stream().map(MemberInChannel::getMember)
+        List<MemberInChannel> memberInChannels = memberInChannelRepository.findAllByChannel(
+            channel);
+        List<SquadMemberDto> squadMemberDtos = memberInChannels.stream()
+            .map(MemberInChannel::getMember)
             .map(SquadMemberDto::new).collect(Collectors.toList());
 
         return ChatSquadInfoDto.builder()
             .channelId(channelId)
             .channelName(channel.getChannelName())
             .squadMembers(squadMemberDtos)
-            .leader( channel.getQuest().getMember() )
+            .leaderId(channel.getQuest().getMember().getId())
             .build();
     }
 
     @Transactional
     @CacheEvict(value = "chatSquadInfo", key = "#channelId")
-    public void quitChannel(Long channelId, UserDetailsImpl userDetails){
+    public void quitChannel(Long channelId, UserDetailsImpl userDetails) {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
         Member member = userDetails.getMember();
