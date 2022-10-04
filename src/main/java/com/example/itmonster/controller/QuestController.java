@@ -9,6 +9,8 @@ import com.example.itmonster.security.UserDetailsImpl;
 import com.example.itmonster.service.QuestService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.MultiValueMap;
@@ -80,9 +82,18 @@ public class QuestController {
         return ResponseEntity.ok(questService.completeQuest(questId, userDetails));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<QuestResponseDto>> searchQuests( @RequestParam MultiValueMap<String, String> allParameters ){
+//    @GetMapping("/search")
+//    public ResponseEntity<List<QuestResponseDto>> searchQuests(
+//        @RequestParam MultiValueMap<String, String> allParameters){
+//
+//        return ResponseEntity.ok( questService.searchQuests( allParameters ) );
+//    }
 
-        return ResponseEntity.ok( questService.searchQuests( allParameters ) );
+    // 검색 결과 pageable로 가져오기
+    @GetMapping("/search")
+    public ResponseEntity<Page<QuestResponseDto>> searchQuestsPage(
+        @RequestParam MultiValueMap<String, String> allParameters, Pageable pageable){
+
+        return ResponseEntity.ok( questService.searchQuestsPage( allParameters , pageable ) );
     }
 }
