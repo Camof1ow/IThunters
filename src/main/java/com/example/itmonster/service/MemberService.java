@@ -3,12 +3,14 @@ package com.example.itmonster.service;
 import com.example.itmonster.controller.request.MemberStacksDto;
 import com.example.itmonster.controller.request.SignupRequestDto;
 import com.example.itmonster.controller.request.SmsRequestDto;
+import com.example.itmonster.controller.response.BookmarkDto;
 import com.example.itmonster.controller.response.CompletedQuestDto;
 import com.example.itmonster.controller.response.MemberResponseDto;
 import com.example.itmonster.controller.response.MyPageResponseDto;
 import com.example.itmonster.controller.response.ResponseDto;
 import com.example.itmonster.controller.response.SocialLoginResponseDto;
 import com.example.itmonster.controller.response.StackDto;
+import com.example.itmonster.domain.Bookmark;
 import com.example.itmonster.domain.Folio;
 import com.example.itmonster.domain.Follow;
 import com.example.itmonster.domain.Member;
@@ -17,6 +19,7 @@ import com.example.itmonster.domain.Squad;
 import com.example.itmonster.domain.StackOfMember;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
+import com.example.itmonster.repository.BookmarkRepository;
 import com.example.itmonster.repository.FolioRepository;
 import com.example.itmonster.repository.FollowRepository;
 import com.example.itmonster.repository.MemberRepository;
@@ -32,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -55,6 +59,7 @@ public class MemberService {
 	private final SmsService smsService;
 	private final JwtDecoder jwtDecoder;
 	private final SquadRepository squadRepository;
+	private final BookmarkRepository bookmarkRepository;
 
 
 	String emailPattern = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$"; //이메일 정규식 패턴
@@ -254,6 +259,14 @@ public class MemberService {
 
 	}
 
+	@Transactional(readOnly = true)
+	public List<BookmarkDto> getMyBookmark(String token){
+		String username = jwtDecoder.decodeUsername(token.substring(7));
+		Member member = memberRepository.findByEmail(username)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		List<Bookmark> bookmarks = bookmarkRepository.findAllByMarkedMember(member);
+		return bookmarks.stream().map(Bookmark::getQuest).map(BookmarkDto::new).collect(Collectors.toList());
+	}
 
 	//소셜로그인 사용자 정보 조회
 	public ResponseDto<SocialLoginResponseDto> socialUserInfo(UserDetailsImpl userDetails) {
