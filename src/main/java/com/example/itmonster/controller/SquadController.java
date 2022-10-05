@@ -31,7 +31,6 @@ public class SquadController {
     private final ChannelRepository channelRepository;
 
     // 스쿼드에 멤버 추가
-    @CrossOrigin("*")
     @PostMapping("/squads/{offerId}")
     public ResponseEntity<Boolean> addSquadMember(@PathVariable Long offerId,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
