@@ -13,6 +13,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +31,7 @@ public class SquadController {
     private final ChannelRepository channelRepository;
 
     // 스쿼드에 멤버 추가
+    @CrossOrigin("*")
     @PostMapping("/squads/{offerId}")
     public ResponseEntity<Boolean> addSquadMember(@PathVariable Long offerId,
         @AuthenticationPrincipal UserDetailsImpl userDetails) {
