@@ -10,5 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findTop100ByChannelIdOrderByCreatedAtDesc(Long roomId);
     Message findTopByChannelIdOrderByCreatedAtDesc(Long channelId);
-    Page<Message> findAllByChannelOrderByIdDesc(Channel channel, Pageable pageable);
+    Page<Message> findAllByChannelOrderByCreatedAtDesc(Channel channel, Pageable pageable);
 }
