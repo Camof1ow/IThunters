@@ -3,7 +3,9 @@ package com.example.itmonster.controller;
 import com.example.itmonster.controller.request.MemberStacksDto;
 import com.example.itmonster.controller.request.SignupRequestDto;
 import com.example.itmonster.controller.request.SmsRequestDto;
+import com.example.itmonster.controller.response.BookmarkDto;
 import com.example.itmonster.controller.response.MemberResponseDto;
+import com.example.itmonster.controller.response.MyPageResponseDto;
 import com.example.itmonster.controller.response.ResponseDto;
 import com.example.itmonster.controller.response.SocialLoginResponseDto;
 import com.example.itmonster.security.UserDetailsImpl;
@@ -105,8 +107,13 @@ public class MemberController {
 	}
 
 	@GetMapping("/api/myPage/{memberId}")
-	public ResponseEntity getMyPage(@PathVariable Long memberId, @RequestHeader(name = "Authorization",required = false)String token){
+	public ResponseEntity<MyPageResponseDto> getMyPage(@PathVariable Long memberId, @RequestHeader(name = "Authorization",required = false)String token){
 		return ResponseEntity.ok(memberService.getMyPage(memberId, token));
+	}
+
+	@GetMapping("/api/myPage/bookmark")
+	public ResponseEntity<List<BookmarkDto>> getMyBookmark(@RequestHeader(name = "Authorization") String token){
+		return ResponseEntity.ok(memberService.getMyBookmark(token));
 	}
 
 	@PutMapping("/api/members/update")
