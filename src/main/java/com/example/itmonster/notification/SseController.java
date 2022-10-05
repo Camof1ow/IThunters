@@ -41,6 +41,7 @@ public class SseController {
         try{
             // 연결
             response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+
             sseEmitter.send(SseEmitter.event().name("connect").data("SSE연결 성공!"));
         } catch (IOException e){
             e.printStackTrace();
