@@ -8,6 +8,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +25,7 @@ public class OfferController {
     private final OfferService offerService;
 
     // 퀘스트 합류 요청
+    @CrossOrigin("*")
     @PostMapping("/quests/{questId}/offers")
     public ResponseEntity<Boolean> createOffer( @PathVariable Long questId,
                                                 @RequestBody OfferRequestDto requestDto,
@@ -38,6 +40,7 @@ public class OfferController {
     }
 
     // '거절' 누를 시 합류요청 삭제
+    @CrossOrigin("*")
     @DeleteMapping("/offers/{offerId}")
     public ResponseEntity<Boolean> deleteOffer( @PathVariable Long offerId,
         @AuthenticationPrincipal UserDetailsImpl userDetails){
