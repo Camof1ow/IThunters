@@ -8,6 +8,8 @@ import com.example.itmonster.security.jwt.JwtDecoder;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -27,7 +29,7 @@ public class SseController {
 
     @CrossOrigin("*")
     @GetMapping(value = "/sub", consumes = MediaType.ALL_VALUE)
-    public SseEmitter subscribe(@RequestParam String token){
+    public SseEmitter subscribe(@RequestParam String token, HttpServletResponse response){
 
         String username = jwtDecoder.decodeUsername(token);
         Member member = memberRepository.findByEmail(username)
@@ -38,7 +40,9 @@ public class SseController {
         SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
         try{
             // 연결
-            sseEmitter.send(SseEmitter.event().name("connect"));
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            sseEmitter.send(SseEmitter.event().name("connect").data("SSE연결 성공!"));
         } catch (IOException e){
             e.printStackTrace();
         }
