@@ -10,12 +10,13 @@ import com.example.itmonster.domain.Quest;
 import com.example.itmonster.domain.Squad;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
-import com.example.itmonster.notification.NotificationService;
 import com.example.itmonster.repository.ChannelRepository;
 import com.example.itmonster.repository.MemberInChannelRepository;
 import com.example.itmonster.repository.OfferRepository;
 import com.example.itmonster.repository.QuestRepository;
 import com.example.itmonster.repository.SquadRepository;
+import com.example.itmonster.socket.AlarmDto;
+import com.example.itmonster.socket.AlarmService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,7 +34,7 @@ public class SquadService {
     private final SquadRepository squadRepository;
     private final MemberInChannelRepository memberInChannelRepository;
     private final ChannelRepository channelRepository;
-    private final NotificationService notificationService;
+    private final AlarmService alarmService;
 
     // 스쿼드에 멤버 추가
     @Transactional
@@ -63,7 +64,12 @@ public class SquadService {
                 .member(offeredMember)
                 .build());
 
-        notificationService.acceptOfferEvent(offer.getId());
+        AlarmDto alarmDto = AlarmDto.builder()
+            .receiverId(offer.getOfferedMember().getId())
+            .content("퀘스트 \""+offer.getQuest().getTitle()+"\"에 대한 합류요청이 승인되었습니다.")
+            .build();
+
+        alarmService.sendAlarm(alarmDto);
 
         // Offer DB 에서 삭제
         offerRepository.delete(offer);
@@ -140,6 +146,4 @@ public class SquadService {
         squadRepository.delete(squad);
         return true;
     }
-
-
 }
