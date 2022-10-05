@@ -69,7 +69,7 @@ public class MessageService {
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
 
-        Page<Message> messages = messageRepository.findAllByChannelOrderByIdDesc(channel, pageable);
+        Page<Message> messages = messageRepository.findAllByChannelOrderByCreatedAtDesc(channel, pageable);
 
         return new PageImpl<>(
             messages.stream().map(MessageResponseDto::new).collect(Collectors.toList()),
