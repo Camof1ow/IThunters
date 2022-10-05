@@ -25,7 +25,6 @@ public class OfferController {
     private final OfferService offerService;
 
     // 퀘스트 합류 요청
-    @CrossOrigin("*")
     @PostMapping("/quests/{questId}/offers")
     public ResponseEntity<Boolean> createOffer( @PathVariable Long questId,
                                                 @RequestBody OfferRequestDto requestDto,
@@ -40,7 +39,6 @@ public class OfferController {
     }
 
     // '거절' 누를 시 합류요청 삭제
-    @CrossOrigin("*")
     @DeleteMapping("/offers/{offerId}")
     public ResponseEntity<Boolean> deleteOffer( @PathVariable Long offerId,
         @AuthenticationPrincipal UserDetailsImpl userDetails){
