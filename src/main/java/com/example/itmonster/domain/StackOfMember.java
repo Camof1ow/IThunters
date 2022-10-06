@@ -15,6 +15,9 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table( indexes = {
+    @Index( name ="stackName", columnList = "stackName")
+})
 public class StackOfMember {
 
     @Id

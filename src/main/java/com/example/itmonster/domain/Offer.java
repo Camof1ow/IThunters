@@ -15,6 +15,10 @@ import javax.persistence.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table( indexes = {
+    @Index( name ="createdAt", columnList = "createdAt"),
+    @Index( name ="classType", columnList = "classType")
+})
 public class Offer extends Timestamped {
 
     @Id
