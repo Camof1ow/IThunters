@@ -15,6 +15,9 @@ import javax.persistence.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table( indexes = {
+    @Index( name ="createdAt", columnList = "createdAt")
+})
 public class SubComment extends Timestamped {
 
     @Id

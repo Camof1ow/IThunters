@@ -17,6 +17,9 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table( indexes = {
+    @Index( name ="createdAt", columnList = "createdAt")
+})
 public class Comment extends Timestamped {
 
 
