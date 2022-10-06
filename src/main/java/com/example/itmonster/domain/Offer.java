@@ -26,7 +26,6 @@ public class Offer extends Timestamped {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Quest quest;
 
-
     @JoinColumn
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -35,9 +34,17 @@ public class Offer extends Timestamped {
     @Column( nullable = false )
     private ClassType classType;
 
+    @Column(nullable = false)
+    private OfferType offerType;
+
+    @Column
+    private String content;
 
     public enum ClassType{
         FRONTEND, BACKEND, FULLSTACK, DESIGNER
     }
 
+    public enum OfferType{
+        NEWOFFER, ACCEPTED, DECLINED
+    }
 }
