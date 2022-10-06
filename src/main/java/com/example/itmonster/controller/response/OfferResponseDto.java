@@ -2,6 +2,8 @@ package com.example.itmonster.controller.response;
 
 import com.example.itmonster.domain.Offer;
 import com.example.itmonster.domain.Offer.ClassType;
+import com.example.itmonster.domain.Offer.OfferType;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +27,11 @@ public class OfferResponseDto {
 
     private ClassType classType;
 
+    private LocalDateTime createdAt;
+
+    private OfferType offerType;
+
+    private String content;
 
     public OfferResponseDto ( Offer offer ){
         offerId = offer.getId();
@@ -34,6 +41,8 @@ public class OfferResponseDto {
         profileImg = offer.getOfferedMember().getProfileImg();
         questTitle = offer.getQuest().getTitle();
         classType = offer.getClassType();
+        offerType = offer.getOfferType();
+        content = offer.getContent();
+        createdAt = offer.getCreatedAt();
     }
-
 }

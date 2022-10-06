@@ -26,26 +26,31 @@ public class OfferController {
 
     // 퀘스트 합류 요청
     @PostMapping("/quests/{questId}/offers")
-    public ResponseEntity<Boolean> createOffer( @PathVariable Long questId,
-                                                @RequestBody OfferRequestDto requestDto,
-                                                @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return ResponseEntity.ok( offerService.createOffer( questId, requestDto.getClassType() , userDetails ));
+    public ResponseEntity<Boolean> createOffer(@PathVariable Long questId,
+        @RequestBody OfferRequestDto requestDto,
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(
+            offerService.createOffer(questId, requestDto.getClassType(), userDetails));
     }
 
     // 회원(게시글 주인)의 현재 들어온 합류요청 목록
     @GetMapping("/offers")
-    public ResponseEntity<List<OfferResponseDto>> getOfferList( @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return ResponseEntity.ok( offerService.getOfferList( userDetails.getMember() ));
+    public ResponseEntity<List<OfferResponseDto>> getOfferList(
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(offerService.getOfferList(userDetails.getMember()));
     }
 
     // '거절' 누를 시 합류요청 삭제
     @DeleteMapping("/offers/{offerId}")
-    public ResponseEntity<Boolean> deleteOffer( @PathVariable Long offerId,
-        @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return ResponseEntity.ok( offerService.deleteOffer( offerId, userDetails ));
-
+    public ResponseEntity<Boolean> deleteOffer(@PathVariable Long offerId,
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(offerService.deleteOffer(offerId, userDetails));
     }
 
+    @DeleteMapping("/offers/alarmedOffer/{offerId}")
+    public ResponseEntity<Boolean> deleteOfferAcceptedOrDeclined(@PathVariable Long offerId) {
+        return ResponseEntity.ok(offerService.deleteOfferAcceptedOrDeclined(offerId));
+    }
 
 //    @GetMapping("/quests/order/{orderId}")
 //    public ResponseEntity<OrderDetailsDto> getOrderDetails( @PathVariable Long orderId,
