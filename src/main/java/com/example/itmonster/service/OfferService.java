@@ -4,6 +4,7 @@ import com.example.itmonster.controller.response.OfferResponseDto;
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.Offer;
 import com.example.itmonster.domain.Offer.ClassType;
+import com.example.itmonster.domain.Offer.OfferType;
 import com.example.itmonster.domain.Quest;
 import com.example.itmonster.domain.Squad;
 import com.example.itmonster.exceptionHandler.CustomException;
@@ -64,11 +65,13 @@ public class OfferService {
                 .offeredMember(offeredMember)
                 .classType(classType)
                 .quest(quest)
+                .offerType(OfferType.NEWOFFER)
+                .content("등록하신 퀘스트 \"" + quest.getTitle() + "\"에 대한 새로운 합류요청이 도착했습니다.")
                 .build());
 
         AlarmDto alarmDto = AlarmDto.builder()
             .receiverId(questOwner.getId())
-            .content("등록하신 퀘스트 \""+quest.getTitle()+"\"에 대한 새로운 합류요청이 도착했습니다.")
+            .content("등록하신 퀘스트 \"" + quest.getTitle() + "\"에 대한 새로운 합류요청이 도착했습니다.")
             .build();
 
         alarmService.sendAlarm(alarmDto);
@@ -83,11 +86,20 @@ public class OfferService {
         List<Quest> quests = questRepository.findAllByMember(questOwner);
 
         List<Offer> offers = offerRepository.findAllByQuestIn(quests);
-        List<OfferResponseDto> OfferResponseDtos = new ArrayList<>();
+        List<OfferResponseDto> offerResponseDtos = new ArrayList<>();
 
-        offers.forEach(offer -> OfferResponseDtos.add(new OfferResponseDto(offer)));
+        List<Offer> offers2 = offerRepository.findAllByOfferedMemberAndOfferType(questOwner,
+            OfferType.ACCEPTED);
+        List<Offer> offers3 = offerRepository.findAllByOfferedMemberAndOfferType(questOwner,
+            OfferType.DECLINED);
 
-        return OfferResponseDtos;
+        offers.addAll(offers2);
+        offers.addAll(offers3);
+        offers.forEach(offer -> offerResponseDtos.add(new OfferResponseDto(offer)));
+
+        offerResponseDtos.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
+
+        return offerResponseDtos;
     }
 
     // '거절' 누를 시 합류요청 삭제
@@ -98,15 +110,33 @@ public class OfferService {
             () -> new CustomException(ErrorCode.OFFER_NOT_FOUND)
         );
 
+        Offer declinedOffer = Offer.builder()
+            .classType(offer.getClassType())
+            .offeredMember(offer.getOfferedMember())
+            .quest(offer.getQuest())
+            .offerType(OfferType.DECLINED)
+            .content("퀘스트 \"" + offer.getQuest().getTitle() + "\"에 대한 합류요청이 거절되었습니다.")
+            .build();
+        offerRepository.save(declinedOffer);
+
         AlarmDto alarmDto = AlarmDto.builder()
             .receiverId(offer.getOfferedMember().getId())
-            .content("퀘스트 \""+offer.getQuest().getTitle()+"\"에 대한 합류요청이 거절되었습니다.")
+            .content("퀘스트 \"" + offer.getQuest().getTitle() + "\"에 대한 합류요청이 거절되었습니다.")
             .build();
 
         alarmService.sendAlarm(alarmDto);
 
         offerRepository.delete(offer);
 
+        return true;
+    }
+
+    @Transactional
+    public Boolean deleteOfferAcceptedOrDeclined(Long offerId) {
+
+        Offer offer = offerRepository.findById(offerId).orElseThrow(
+            () -> new CustomException(ErrorCode.OFFER_NOT_FOUND));
+        offerRepository.delete(offer);
         return true;
     }
 
