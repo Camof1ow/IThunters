@@ -85,7 +85,7 @@ public class OfferService {
 
         List<Quest> quests = questRepository.findAllByMember(questOwner);
 
-        List<Offer> offers = offerRepository.findAllByQuestIn(quests);
+        List<Offer> offers = offerRepository.findAllByOfferTypeAndQuestIn(OfferType.NEWOFFER, quests);
         List<OfferResponseDto> offerResponseDtos = new ArrayList<>();
 
         List<Offer> offers2 = offerRepository.findAllByOfferedMemberAndOfferType(questOwner,
