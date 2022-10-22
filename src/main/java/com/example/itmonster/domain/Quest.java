@@ -16,6 +16,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table( indexes = {
+    @Index( name ="createdAt", columnList = "createdAt"),
+    @Index( name ="title", columnList = "title"),
+    @Index( name ="duration", columnList = "duration")
+})
 public class Quest extends Timestamped {
 
     @Id

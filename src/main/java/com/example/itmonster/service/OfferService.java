@@ -4,15 +4,17 @@ import com.example.itmonster.controller.response.OfferResponseDto;
 import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.Offer;
 import com.example.itmonster.domain.Offer.ClassType;
+import com.example.itmonster.domain.Offer.OfferType;
 import com.example.itmonster.domain.Quest;
 import com.example.itmonster.domain.Squad;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
-import com.example.itmonster.notification.NotificationService;
 import com.example.itmonster.repository.OfferRepository;
 import com.example.itmonster.repository.QuestRepository;
 import com.example.itmonster.repository.SquadRepository;
 import com.example.itmonster.security.UserDetailsImpl;
+import com.example.itmonster.socket.AlarmDto;
+import com.example.itmonster.socket.AlarmService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,84 +30,124 @@ public class OfferService {
     private final OfferRepository offerRepository;
     private final QuestRepository questRepository;
     private final SquadRepository squadRepository;
-    private final NotificationService notificationService;
+    private final AlarmService alarmService;
 
     // 합류 요청 생성
     @Transactional
     public boolean createOffer(Long questId, ClassType classType, UserDetailsImpl userDetails) {
 
-        Quest quest = questRepository.findById( questId ).orElseThrow(
-            () -> new CustomException( ErrorCode.QUEST_NOT_FOUND )   // 에러 : 존재하지 않는 퀘스트
+        Quest quest = questRepository.findById(questId).orElseThrow(
+            () -> new CustomException(ErrorCode.QUEST_NOT_FOUND)   // 에러 : 존재하지 않는 퀘스트
         );
 
         Member offeredMember = userDetails.getMember();
         Member questOwner = quest.getMember();
 
-        if(Objects.equals(offeredMember.getId() , questOwner.getId() )) {
-            throw new CustomException( ErrorCode.INVALID_OFFER_REQUEST );  // 에러 : 게시글 주인과 요청자가 다를 경우
+        if (Objects.equals(offeredMember.getId(), questOwner.getId())) {
+            throw new CustomException(ErrorCode.INVALID_OFFER_REQUEST);  // 에러 : 게시글 주인과 요청자가 다를 경우
         }
 
-        Optional<Offer> offer = offerRepository.findByOfferedMemberAndQuest( offeredMember , quest );
+        Optional<Offer> offer = offerRepository.findByOfferedMemberAndQuest(offeredMember, quest);
 
-        if( offer.isPresent() ) throw new CustomException( ErrorCode.OFFER_CONFLICT );  // 에러 : 오더가 이미 존재할 경우
+        if (offer.isPresent()) {
+            throw new CustomException(ErrorCode.OFFER_CONFLICT);  // 에러 : 오더가 이미 존재할 경우
+        }
 
         Squad squad = squadRepository.findAllByMemberAndQuest(offeredMember, quest).orElse(null);
         if (squad != null) {
             throw new CustomException(ErrorCode.SQUAD_CONFLICT);
         }
 
-        chkClassRecruitment( classType , quest );
+        chkClassRecruitment(classType, quest);
 
         offerRepository.save(
             Offer.builder()
-                .offeredMember( offeredMember )
-                .classType( classType )
-                .quest( quest )
-                .build()
-        );
+                .offeredMember(offeredMember)
+                .classType(classType)
+                .quest(quest)
+                .offerType(OfferType.NEWOFFER)
+                .content("등록하신 퀘스트 \"" + quest.getTitle() + "\"에 대한 새로운 합류요청이 도착했습니다.")
+                .build());
 
-        notificationService.notifyNewOfferEvent(questId);
+        AlarmDto alarmDto = AlarmDto.builder()
+            .receiverId(questOwner.getId())
+            .content("등록하신 퀘스트 \"" + quest.getTitle() + "\"에 대한 새로운 합류요청이 도착했습니다.")
+            .build();
+
+        alarmService.sendAlarm(alarmDto);
 
         return true;
     }
 
     // 회원(게시글 주인)의 현재 들어온 합류요청 목록
-    @Transactional( readOnly = true )
-    public List<OfferResponseDto> getOfferList( Member questOwner ) {
+    @Transactional(readOnly = true)
+    public List<OfferResponseDto> getOfferList(Member questOwner) {
 
-        List<Quest> quests = questRepository.findAllByMember( questOwner );
+        List<Quest> quests = questRepository.findAllByMember(questOwner);
 
-        List<Offer> offers = offerRepository.findAllByQuestIn( quests );
-        List<OfferResponseDto> OfferResponseDtos = new ArrayList<>();
+        List<Offer> offers = offerRepository.findAllByOfferTypeAndQuestIn(OfferType.NEWOFFER, quests);
+        List<OfferResponseDto> offerResponseDtos = new ArrayList<>();
 
-        offers.forEach( offer -> OfferResponseDtos.add (new OfferResponseDto( offer )) );
+        List<Offer> offers2 = offerRepository.findAllByOfferedMemberAndOfferType(questOwner,
+            OfferType.ACCEPTED);
+        List<Offer> offers3 = offerRepository.findAllByOfferedMemberAndOfferType(questOwner,
+            OfferType.DECLINED);
 
-        return OfferResponseDtos;
+        offers.addAll(offers2);
+        offers.addAll(offers3);
+        offers.forEach(offer -> offerResponseDtos.add(new OfferResponseDto(offer)));
+
+        offerResponseDtos.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
+
+        return offerResponseDtos;
     }
 
     // '거절' 누를 시 합류요청 삭제
     @Transactional
     public Boolean deleteOffer(Long offerId, UserDetailsImpl userDetails) {
 
-        Offer offer = offerRepository.findById( offerId ).orElseThrow(
-            () -> new CustomException( ErrorCode.OFFER_NOT_FOUND )
+        Offer offer = offerRepository.findById(offerId).orElseThrow(
+            () -> new CustomException(ErrorCode.OFFER_NOT_FOUND)
         );
 
-        notificationService.declineOfferEvent(offerId);
+        Offer declinedOffer = Offer.builder()
+            .classType(offer.getClassType())
+            .offeredMember(offer.getOfferedMember())
+            .quest(offer.getQuest())
+            .offerType(OfferType.DECLINED)
+            .content("퀘스트 \"" + offer.getQuest().getTitle() + "\"에 대한 합류요청이 거절되었습니다.")
+            .build();
+        offerRepository.save(declinedOffer);
 
-        offerRepository.delete( offer );
+        AlarmDto alarmDto = AlarmDto.builder()
+            .receiverId(offer.getOfferedMember().getId())
+            .content("퀘스트 \"" + offer.getQuest().getTitle() + "\"에 대한 합류요청이 거절되었습니다.")
+            .build();
+
+        alarmService.sendAlarm(alarmDto);
+
+        offerRepository.delete(offer);
 
         return true;
     }
 
-    public void chkClassRecruitment( ClassType classType , Quest quest ) {
+    @Transactional
+    public Boolean deleteOfferAcceptedOrDeclined(Long offerId) {
+
+        Offer offer = offerRepository.findById(offerId).orElseThrow(
+            () -> new CustomException(ErrorCode.OFFER_NOT_FOUND));
+        offerRepository.delete(offer);
+        return true;
+    }
+
+    public void chkClassRecruitment(ClassType classType, Quest quest) {
         if ((classType == ClassType.FRONTEND && quest.getFrontend() < 1)
             || (classType == ClassType.BACKEND && quest.getBackend() < 1)
             || (classType == ClassType.FULLSTACK && quest.getFullstack() < 1)
-            || (classType == ClassType.DESIGNER && quest.getDesigner() < 1 ) )
+            || (classType == ClassType.DESIGNER && quest.getDesigner() < 1)) {
             throw new CustomException(ErrorCode.NO_RECRUITMENT);
+        }
     }
-
 
 
 }

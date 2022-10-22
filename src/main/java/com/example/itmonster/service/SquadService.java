@@ -6,16 +6,18 @@ import com.example.itmonster.domain.Member;
 import com.example.itmonster.domain.MemberInChannel;
 import com.example.itmonster.domain.Offer;
 import com.example.itmonster.domain.Offer.ClassType;
+import com.example.itmonster.domain.Offer.OfferType;
 import com.example.itmonster.domain.Quest;
 import com.example.itmonster.domain.Squad;
 import com.example.itmonster.exceptionHandler.CustomException;
 import com.example.itmonster.exceptionHandler.ErrorCode;
-import com.example.itmonster.notification.NotificationService;
 import com.example.itmonster.repository.ChannelRepository;
 import com.example.itmonster.repository.MemberInChannelRepository;
 import com.example.itmonster.repository.OfferRepository;
 import com.example.itmonster.repository.QuestRepository;
 import com.example.itmonster.repository.SquadRepository;
+import com.example.itmonster.socket.AlarmDto;
+import com.example.itmonster.socket.AlarmService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,7 +35,7 @@ public class SquadService {
     private final SquadRepository squadRepository;
     private final MemberInChannelRepository memberInChannelRepository;
     private final ChannelRepository channelRepository;
-    private final NotificationService notificationService;
+    private final AlarmService alarmService;
 
     // 스쿼드에 멤버 추가
     @Transactional
@@ -63,23 +65,49 @@ public class SquadService {
                 .member(offeredMember)
                 .build());
 
-        notificationService.acceptOfferEvent(offer.getId());
+        Offer acceptedOffer = Offer.builder()
+            .offerType(OfferType.ACCEPTED)
+            .offeredMember(offeredMember)
+            .classType(classType)
+            .quest(quest)
+            .content("퀘스트 \"" + offer.getQuest().getTitle() + "\"에 대한 합류요청이 승인되었습니다.")
+            .build();
+        offerRepository.save(acceptedOffer);
+
+        AlarmDto alarmDto = AlarmDto.builder()
+            .receiverId(offer.getOfferedMember().getId())
+            .content("퀘스트 \"" + offer.getQuest().getTitle() + "\"에 대한 합류요청이 승인되었습니다.")
+            .build();
+
+        alarmService.sendAlarm(alarmDto);
 
         // Offer DB 에서 삭제
         offerRepository.delete(offer);
 
         if (classType == ClassType.BACKEND) {
             quest.updateBackendCount(quest.getBackend() - 1);
-            if( quest.getBackend() <= 0 ) offerRepository.deleteAllByQuestAndClassType( quest , ClassType.BACKEND );
+            if (quest.getBackend() <= 0) {
+                offerRepository.deleteAllByQuestAndClassTypeAndOfferType(quest, ClassType.BACKEND,
+                    OfferType.NEWOFFER);
+            }
         } else if (classType == ClassType.FRONTEND) {
             quest.updateFrontendCount(quest.getFrontend() - 1);
-            if( quest.getFrontend() <= 0 ) offerRepository.deleteAllByQuestAndClassType( quest , ClassType.FRONTEND );
+            if (quest.getFrontend() <= 0) {
+                offerRepository.deleteAllByQuestAndClassTypeAndOfferType(quest, ClassType.FRONTEND,
+                    OfferType.NEWOFFER);
+            }
         } else if (classType == ClassType.FULLSTACK) {
             quest.updateFullstackCount(quest.getFullstack() - 1);
-            if( quest.getFullstack() <= 0 ) offerRepository.deleteAllByQuestAndClassType( quest , ClassType.FULLSTACK );
+            if (quest.getFullstack() <= 0) {
+                offerRepository.deleteAllByQuestAndClassTypeAndOfferType(quest, ClassType.FULLSTACK,
+                    OfferType.NEWOFFER);
+            }
         } else {
             quest.updateDesignerCount(quest.getDesigner() - 1);
-            if( quest.getDesigner() <= 0 ) offerRepository.deleteAllByQuestAndClassType( quest , ClassType.DESIGNER );
+            if (quest.getDesigner() <= 0) {
+                offerRepository.deleteAllByQuestAndClassTypeAndOfferType(quest, ClassType.DESIGNER,
+                    OfferType.NEWOFFER);
+            }
         }
 
         questRepository.save(quest);
@@ -134,12 +162,11 @@ public class SquadService {
 
         Member questOwner = squad.getQuest().getMember();
 
-        if (!Objects.equals(questOwner.getId(), member.getId()) && !Objects.equals(squad.getMember().getId(), member.getId())) {
+        if (!Objects.equals(questOwner.getId(), member.getId()) && !Objects.equals(
+            squad.getMember().getId(), member.getId())) {
             throw new CustomException(ErrorCode.INVALID_AUTHORITY);   // 본인이나 퀘스트리더만 탈퇴 가능
         }
         squadRepository.delete(squad);
         return true;
     }
-
-
 }

@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -63,15 +62,14 @@ public class MessageService {
     }
 
     @Transactional
-    public Page<MessageResponseDto> readMessagesTest(Long channelId,
-        Pageable pageable) {   // 메시지 불러오기
+    public Page<MessageResponseDto> readMessagesTest(Long channelId, Pageable pageable) {   // 메시지 불러오기
 
         redisToRdsTest(String.valueOf(channelId));
 
         Channel channel = channelRepository.findById(channelId)
             .orElseThrow(() -> new CustomException(ErrorCode.CHANNEL_NOT_FOUND));
 
-        Page<Message> messages = messageRepository.findAllByChannelOrderByIdDesc(channel, pageable);
+        Page<Message> messages = messageRepository.findAllByChannelOrderByCreatedAtDesc(channel, pageable);
 
         return new PageImpl<>(
             messages.stream().map(MessageResponseDto::new).collect(Collectors.toList()),
@@ -131,6 +129,8 @@ public class MessageService {
             log.info("데이터수={}", messageResponseDtos.size());
         }
         if (messageResponseDtos != null && messageResponseDtos.size() >= 100) {
+            messageResponseDtos.sort(Comparator.comparing(MessageResponseDto::getCreatedAt));
+
             Long senderId;
             for (MessageResponseDto messageResponseDto : messageResponseDtos) {
                 senderId = messageResponseDto.getMemberId();
